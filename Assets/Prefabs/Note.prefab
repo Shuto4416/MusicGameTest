@@ -19,7 +19,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6045712699831863438
 Transform:
   m_ObjectHideFlags: 0
@@ -118,3 +118,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fc7b038ed7b75346b3a0c6acacdc678, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _notePrefab: {fileID: 2909585998287120919}
+  Type: 0
+  BeatNum: 0
+  LaneNum: 0
+  LPB: 0

@@ -39,18 +39,18 @@ using Audio;
         //ノーツが判定線と重なる時間
         public List<float> NotesTime = new List<float>();
         //gameobject
-        public LinkedList<GameObject> NotesObj = new LinkedList<GameObject>();
+        private LinkedList<GameObject> UsingNotesObj = new LinkedList<GameObject>();
+        private LinkedList<GameObject> UnUseNotesObj = new LinkedList<GameObject>();
         //ノーツの速度
         [SerializeField] private float NotesSpeed;
         //ノーツのprefabを入れる
         [SerializeField] GameObject noteObj;
 
-        void Start()
+        public void Initialize(string songName)
         {
             //総ノーツを0にする
             noteNum = 0;
             //読み込む譜面のファイル名を入力
-            songName = "01 - Re_Unknown X";
 
             Load(songName);
             SoundManager.instance.PlayBGM(BGMFile.GameScene);
@@ -86,11 +86,6 @@ using Audio;
                 //ノーツを生成
                 // NotesObj.Add(Instantiate(noteObj, new Vector3(-2.5f + inputJson.notes[i].block, y, -1), Quaternion.identity));
             }
-            
-            for (int i = 0; i < inputJson.notes.Length; i++)
-            {
-                CreateNote(i);
-            }
         }
 
         public void CreateNote(int i)
@@ -99,13 +94,48 @@ using Audio;
             float time = NotesTime[i];
             if(i != 0)
             {
-                y = NotesObj.Last.Value.transform.position.y;
+                y = UsingNotesObj.Last.Value.transform.position.y;
                 time -= NotesTime[i - 1];
                 time *= NoteSoftLanding[i-1] / 100f;
             }
-            NotesObj.AddLast(Instantiate(noteObj, new Vector3(-2.5f + LaneNum[i], y + NotesSpeed * time, -1), Quaternion.identity));
+            Push(new Vector3(-2.5f + LaneNum[i], y + NotesSpeed * time, -1));
         }
 
+        public GameObject Create()
+        {
+            GameObject obj = Instantiate(noteObj, new Vector3(0,100,0), Quaternion.identity);
+            UnUseNotesObj.AddLast(obj);
+            noteObj.SetActive(false);
+            return obj;
+        }
+
+        public void Pop()
+        {
+            Debug.Log("ノーツをプールから取り出しました");
+            if (UsingNotesObj.Count > 0)
+            {
+                GameObject note = UsingNotesObj.First.Value;
+                UsingNotesObj.RemoveFirst();
+                UnUseNotesObj.AddLast(note);
+                note.transform.position = new Vector3(0, 100, 0); // 画面外に移動
+                note.SetActive(false);
+                Debug.Log("ノーツをプールに戻しました");
+            }
+        }
+
+    public void Push(Vector3 vector3)
+    {
+        if (UnUseNotesObj.Count > 0)
+        {
+            GameObject note = UnUseNotesObj.First.Value;
+            UnUseNotesObj.RemoveFirst();
+            UsingNotesObj.AddLast(note);
+            note.SetActive(true);
+            note.transform.position = vector3;
+        }
     }
+
+
+}
 
 
