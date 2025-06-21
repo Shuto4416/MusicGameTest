@@ -31,18 +31,22 @@ using Audio;
         //曲名
         private string songName;
         //ノーツのレーン
-        public List<float> LaneNum = new List<float>();
+        private List<float> _laneNum = new List<float>();
         //ノーツの種類
         public List<int> NoteType = new List<int>();
         // ノーツの速度倍率
-        public List<int> NoteSoftLanding = new List<int>();
+        private List<int> _noteSoftLanding = new List<int>();
         //ノーツが判定線と重なる時間
-        public List<float> NotesTime = new List<float>();
+        private List<float> _notesTime = new List<float>();
+        public List<float> LaneNum => _laneNum;
+        public List<int> NoteSoftLanding => _noteSoftLanding;
+        public List<float> NotesTime => _notesTime;
         //gameobject
         private LinkedList<GameObject> UsingNotesObj = new LinkedList<GameObject>();
         private LinkedList<GameObject> UnUseNotesObj = new LinkedList<GameObject>();
         //ノーツの速度
-        [SerializeField] private float NotesSpeed;
+        [SerializeField] private float _notesSpeed;
+        public float NotesSpeed => _notesSpeed;
         //ノーツのprefabを入れる
         [SerializeField] GameObject noteObj;
 
@@ -72,19 +76,12 @@ using Audio;
             for (int i = 0; i < inputJson.notes.Length; i++)
             {
                 //時間を計算
-                // float kankaku = 60 / (inputJson.BPM * (float)inputJson.notes[i].LPB/4);
-                // float beatSec = kankaku * (float)inputJson.notes[i].LPB;
-                // float time = (beatSec * inputJson.notes[i].num / (float)inputJson.notes[i].LPB) + inputJson.offset * 0.01f;
                 float time = (60 / (inputJson.BPM * (float)inputJson.notes[i].LPB) * inputJson.notes[i].num)/* + inputJson.offset * 0.01f*/;
                 //リストに追加
-                NotesTime.Add(time);
-                LaneNum.Add(inputJson.notes[i].block);
+                _notesTime.Add(time);
+                _laneNum.Add(inputJson.notes[i].block);
                 NoteType.Add(inputJson.notes[i].type);
-                NoteSoftLanding.Add(inputJson.notes[i].softLanding);
-                
-                // float y = NotesTime[i] * NotesSpeed;
-                //ノーツを生成
-                // NotesObj.Add(Instantiate(noteObj, new Vector3(-2.5f + inputJson.notes[i].block, y, -1), Quaternion.identity));
+                _noteSoftLanding.Add(inputJson.notes[i].softLanding);
             }
         }
 
@@ -98,7 +95,7 @@ using Audio;
                 time -= NotesTime[i - 1];
                 time *= NoteSoftLanding[i-1] / 100f;
             }
-            Push(new Vector3(-2.5f + LaneNum[i], y + NotesSpeed * time, -1));
+            Push(new Vector3(-2.5f + LaneNum[i], y + NotesSpeed/60f * time, -1));
         }
 
         public GameObject Create()
@@ -111,7 +108,6 @@ using Audio;
 
         public void Pop()
         {
-            Debug.Log("ノーツをプールから取り出しました");
             if (UsingNotesObj.Count > 0)
             {
                 GameObject note = UsingNotesObj.First.Value;
@@ -119,7 +115,6 @@ using Audio;
                 UnUseNotesObj.AddLast(note);
                 note.transform.position = new Vector3(0, 100, 0); // 画面外に移動
                 note.SetActive(false);
-                Debug.Log("ノーツをプールに戻しました");
             }
         }
 
@@ -132,6 +127,14 @@ using Audio;
             UsingNotesObj.AddLast(note);
             note.SetActive(true);
             note.transform.position = vector3;
+        }
+    }
+
+    public void Lock()
+    {
+        foreach(GameObject Obj in UnUseNotesObj)
+        {
+            Obj.transform.position = new Vector3(0,100,0);
         }
     }
 

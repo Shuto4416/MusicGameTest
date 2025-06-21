@@ -27,12 +27,6 @@ namespace Notes {
             OnClearEvent?.Invoke();
         }
 
-        public GameObject GetNotePrefab()
-        {
-            return _notePrefab;
-        }
-
-
         public void ManualUpdate(float BPM)
         {
             // ノーツの位置をBPMに基づいて更新

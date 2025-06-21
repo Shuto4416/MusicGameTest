@@ -1266,7 +1266,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 465d6a6093b24614bb53dd121e945b81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bpm: 400
   _lights:
   - {fileID: 694953988}
   - {fileID: 607204689}
@@ -1275,8 +1274,8 @@ MonoBehaviour:
   - {fileID: 1259919620}
   - {fileID: 93746299}
   _notesManager: {fileID: 519420034}
-  _maxNoteNum: 100
-  _defaultNoteNum: 60
+  _maxNoteNum: 70
+  _defaultNoteNum: 40
 --- !u!114 &519420034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1290,11 +1289,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   noteNum: 0
-  LaneNum: []
   NoteType: 
-  NoteSoftLanding: 
-  NotesTime: []
-  NotesSpeed: 6.66
+  _notesSpeed: 800
   noteObj: {fileID: 2909585998287120919, guid: 68e153e99454cfa42ac651a111887069, type: 3}
 --- !u!1 &550621876
 GameObject:

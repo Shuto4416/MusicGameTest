@@ -7,11 +7,11 @@ using UnityEngine;
 using Unity.VisualScripting;
 using Zenject;
 using UnityEditor.VersionControl;
+using System;
 
 namespace InGame {
     public class InGamePresenter : MonoBehaviour
     {
-        [SerializeField] private float _bpm;
         [SerializeField] private Lights.Light[] _lights = new Lights.Light[6];
         [SerializeField] private NotesManager _notesManager;
         [SerializeField] private int _maxNoteNum = 100; // 最大ノーツ数
@@ -22,6 +22,9 @@ namespace InGame {
 
         private string songName = "01 - Re_Unknown X";
         private int CurrentNoteNum;
+        private float CurrentTime;
+        private float sofLan;
+        private List<(float laneNum, float noteTime, int noteSofLan)> _notesData;
 
         [Inject]
         void Injection(IInputProvider inputProvider){
@@ -36,11 +39,24 @@ namespace InGame {
         // Update is called once per frame
         void Update()
         {
+            _notesManager.Lock();
+            for (int i = 0; i < _notesManager.noteNum; i++)
+            {
+                float time = CurrentTime - _notesManager.NotesTime[i];
+                if (Math.Abs(time) < Time.deltaTime)
+                {
+                    sofLan = _notesManager.NoteSoftLanding[i];
+                    Debug.Log($"i = {i}, SofLan = {sofLan}");
+                    break;
+                }
+
+            }
             LightController();
             foreach (Notes.Note note in _notes)
             {
-                note.ManualUpdate(_bpm);
+                note.ManualUpdate(_notesManager.NotesSpeed * sofLan/100);
             }
+            CurrentTime += Time.deltaTime;
         }
 
 
@@ -98,6 +114,7 @@ namespace InGame {
 
         void Initialize()
         {
+            sofLan = 100;
             foreach (var light in _lights)
             {
                 light.Initialize();
@@ -111,6 +128,27 @@ namespace InGame {
             for (int i = 0; i < _defaultNoteNum; i++)
             {
                 CreateNote();
+            }
+            // Debug.Log($"NoteNum: {_notesManager.noteNum} , NoteData: {_notesManager.LaneNum[0]} , {_notesManager.NotesTime[0] }, {_notesManager.NoteSoftLanding[0] }");
+            // for (int i = 0; i < _notesManager.noteNum; i++)
+            // {
+            //     _notesData.Add((_notesManager.LaneNum[i], _notesManager.NotesTime[i], _notesManager.NoteSoftLanding[i]));
+            // }
+        }
+
+        void Push(int laneNum)
+        {
+            float NearestTime = float.MaxValue;
+            foreach (var (_laneNum, _noteTime, _noteSofLan) in _notesData)
+            {
+                if (_laneNum != laneNum) continue;
+                float time = CurrentTime - _noteTime;
+                time = time < 0 ? time*-1 : time;
+                if (NearestTime > time)
+                {
+                    NearestTime = time;
+                }
+
             }
         }
 
