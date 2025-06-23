@@ -11,10 +11,6 @@ namespace Notes {
     {
         [SerializeField]
         private GameObject _notePrefab; // ノーツのプレハブ
-        public int Type;  // ノーツの種類（通常ノーツ・ロングノーツなど）
-        public int BeatNum;   // 何拍目に配置されるか
-        public int LaneNum; // どのレーンに配置されるか
-        public int LPB;   // 1拍あたりの分割数
         public void Move(float BPM)
         {
             Debug.Log("Move");

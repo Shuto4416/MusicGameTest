@@ -71,20 +71,15 @@ namespace InGame {
         void PrepareNote()
         {
             GameObject noteObj = _notesManager.Create();
-            _notes.Add(noteObj.GetComponent<Notes.Note>());
-        }
-
-        void Bind()
-        {
-            foreach(Notes.Note note in _notes)
-            {
-                note.OnClearEvent += () => {
+            Notes.Note note = noteObj.GetComponent<Notes.Note>();
+            _notes.Add(note);
+            note.OnClearEvent += () => {
                     _notesManager.Pop();
                     CreateNote();
                     Debug.Log("Note cleared and created new note.");
                 };
-            }
         }
+
 
 
 
@@ -132,7 +127,6 @@ namespace InGame {
             {
                 PrepareNote();
             }
-            Bind();
             for (int i = 0; i < _defaultNoteNum; i++)
             {
                 CreateNote();
@@ -147,17 +141,20 @@ namespace InGame {
         void Push(int laneNum)
         {
             float NearestTime = float.MaxValue;
-            foreach (var (_laneNum, _noteTime, _noteSofLan) in _notesData)
+            int NearestTimeNoteNum = -1;
+            for (int i = CurrentNum-12 < 0 ? 0 : CurrentNum - 12; i < CurrentNum+12; i++)
             {
-                if (_laneNum != laneNum) continue;
-                float time = CurrentTime - _noteTime;
-                time = time < 0 ? time*-1 : time;
-                if (NearestTime > time)
+                if(_notesManager.LaneNum[i] != laneNum) continue;
+                float time = CurrentTime - _notesManager.NotesTime[i];
+                if (Math.Abs(time) > NearestTime)
                 {
                     NearestTime = time;
+                    NearestTimeNoteNum = i;
                 }
 
             }
+            if (NearestTimeNoteNum == -1) return;
+
         }
 
     }
