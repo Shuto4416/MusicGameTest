@@ -23,6 +23,7 @@ namespace InGame {
         private string songName = "01 - Re_Unknown X";
         private int CurrentNoteNum;
         private float CurrentTime;
+        private int CurrentNum;
         private float sofLan;
         private List<(float laneNum, float noteTime, int noteSofLan)> _notesData;
 
@@ -36,16 +37,23 @@ namespace InGame {
             Load();
         }
 
+        void VariableInitialize()
+        {
+            sofLan = 100;
+            CurrentNum = 0;
+        }
+
         // Update is called once per frame
         void Update()
         {
             _notesManager.Lock();
-            for (int i = 0; i < _notesManager.noteNum; i++)
+            for (int i = CurrentNum; i < _notesManager.noteNum; i++)
             {
                 float time = CurrentTime - _notesManager.NotesTime[i];
-                if (Math.Abs(time) < Time.deltaTime)
+                if (Math.Abs(time) <= Time.deltaTime)
                 {
                     sofLan = _notesManager.NoteSoftLanding[i];
+                    CurrentNum = i;
                     Debug.Log($"i = {i}, SofLan = {sofLan}");
                     break;
                 }
@@ -114,7 +122,7 @@ namespace InGame {
 
         void Initialize()
         {
-            sofLan = 100;
+            VariableInitialize();
             foreach (var light in _lights)
             {
                 light.Initialize();
