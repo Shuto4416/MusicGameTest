@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Audio;
+using Notes;
 
 
-    [Serializable]
+[Serializable]
     public class Data
     {
         public string name;  // 曲名
@@ -31,24 +32,23 @@ using Audio;
         //曲名
         private string songName;
         //ノーツのレーン
-        private List<float> _laneNum = new List<float>();
+        private List<int> _laneNum = new List<int>();
         //ノーツの種類
         public List<int> NoteType = new List<int>();
         // ノーツの速度倍率
         private List<int> _noteSoftLanding = new List<int>();
         //ノーツが判定線と重なる時間
         private List<float> _notesTime = new List<float>();
-        public List<float> LaneNum => _laneNum;
+        public List<int> LaneNum => _laneNum;
         public List<int> NoteSoftLanding => _noteSoftLanding;
         public List<float> NotesTime => _notesTime;
-        //gameobject
-        private LinkedList<GameObject> UsingNotesObj = new LinkedList<GameObject>();
-        private LinkedList<GameObject> UnUseNotesObj = new LinkedList<GameObject>();
+        private List<LinkedList<BaseNote>> UsingNotesObj = new List<LinkedList<BaseNote>>();
+        private LinkedList<BaseNote> UnUseNotesObj = new LinkedList<BaseNote>();
         //ノーツの速度
         [SerializeField] private float _notesSpeed;
         public float NotesSpeed => _notesSpeed;
         //ノーツのprefabを入れる
-        [SerializeField] GameObject noteObj;
+        [SerializeField] Notes.Note note;
 
         public void Initialize(string songName)
         {
@@ -62,9 +62,12 @@ using Audio;
 
         private void Load(string SongName)
         {
-            //jsonファイルを読み込む
+            UsingNotesObj.Clear();
+            // jsonファイルを読み込む
             string inputString = Resources.Load<TextAsset>(SongName).ToString();
             Data inputJson = JsonUtility.FromJson<Data>(inputString);
+
+            for (int i = 0; i < inputJson.maxBlock; i++) UsingNotesObj.Add(new LinkedList<BaseNote>());
 
             //総ノーツ数を設定
             noteNum = inputJson.notes.Length;
@@ -89,50 +92,55 @@ using Audio;
         {
             float y = 0;
             float time = NotesTime[i];
+            int laneNum = LaneNum[i];
             if(i != 0)
             {
-                y = UsingNotesObj.Last.Value.transform.position.y;
+                // 直前に生成したノーツの情報を取得
+                y = UsingNotesObj[LaneNum[i-1]].Last.Value.transform.position.y;
                 time -= NotesTime[i - 1];
                 time *= NoteSoftLanding[i-1] / 100f;
             }
-            Push(new Vector3(-2.5f + LaneNum[i], y + NotesSpeed/60f * time, -1));
+            Push(laneNum, y, time);
         }
 
-        public GameObject Create()
+        public BaseNote Create()
         {
-            GameObject obj = Instantiate(noteObj, new Vector3(0,100,0), Quaternion.identity);
-            UnUseNotesObj.AddLast(obj);
-            noteObj.SetActive(false);
-            return obj;
+            GameObject obj = Instantiate(note.gameObject, new Vector3(0,100,0), Quaternion.identity);
+            BaseNote objsNote = obj.GetComponent<BaseNote>();
+            UnUseNotesObj.AddLast(objsNote);
+            obj.SetActive(false);
+            return objsNote;
         }
 
-        public void Pop()
+        public void Pop(int laneNum)
         {
-            if (UsingNotesObj.Count > 0)
+            if (UsingNotesObj[laneNum].Count >= 0)
             {
-                GameObject note = UsingNotesObj.First.Value;
-                UsingNotesObj.RemoveFirst();
+                BaseNote note = UsingNotesObj[laneNum].First.Value;
+                UsingNotesObj[laneNum].RemoveFirst();
                 UnUseNotesObj.AddLast(note);
-                note.transform.position = new Vector3(0, 100, 0); // 画面外に移動
-                note.SetActive(false);
+                note.gameObject.transform.position = new Vector3(0, 100, 0); // 画面外に移動
+                note.gameObject.SetActive(false);
             }
         }
 
-    public void Push(Vector3 vector3)
+    public void Push(int laneNum, float y, float time)
     {
+        Vector3 vector3 = new Vector3(-2.5f + laneNum, y + NotesSpeed/60f * time, -1);
         if (UnUseNotesObj.Count > 0)
         {
-            GameObject note = UnUseNotesObj.First.Value;
+            BaseNote note = UnUseNotesObj.First.Value;
             UnUseNotesObj.RemoveFirst();
-            UsingNotesObj.AddLast(note);
-            note.SetActive(true);
+            UsingNotesObj[laneNum].AddLast(note);
+            note.Initialize(time, laneNum);
+            note.gameObject.SetActive(true);
             note.transform.position = vector3;
         }
     }
 
     public void Lock()
     {
-        foreach(GameObject Obj in UnUseNotesObj)
+        foreach(BaseNote Obj in UnUseNotesObj)
         {
             Obj.transform.position = new Vector3(0,100,0);
         }

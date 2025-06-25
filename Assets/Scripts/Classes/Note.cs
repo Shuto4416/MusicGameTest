@@ -7,31 +7,19 @@ using UnityEngine;
 
 
 namespace Notes {
-    public class Note : MonoBehaviour, INote
+    public class Note : BaseNote
     {
-        [SerializeField]
-        private GameObject _notePrefab; // ノーツのプレハブ
-        public void Move(float BPM)
+        public override void Initialize(float lifeSpan, int laneNum)
         {
-            Debug.Log("Move");
-            transform.position += Vector3.down * (BPM/60f) * Time.deltaTime;
+            base.Initialize(lifeSpan, laneNum);
         }
-        public event Action OnClearEvent;
-
-        public void Clear()
+        public override void ManualUpdate(float BPM)
         {
-            OnClearEvent?.Invoke();
-        }
-
-        public void ManualUpdate(float BPM)
-        {
-            // ノーツの位置をBPMに基づいて更新
-            Move(BPM);
-            
+            base.ManualUpdate(BPM);
             // 画面外に出たらクリアイベントを発火
-            if (_notePrefab.transform.position.y < -5f) // 画面外のY座標を適宜調整
+            if (transform.position.y < -5f) // 画面外のY座標を適宜調整
             {
-                OnClearEvent?.Invoke();
+                base.Clear();
                 Debug.Log("Note cleared.");
             }
         }

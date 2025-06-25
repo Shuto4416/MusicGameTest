@@ -1901,7 +1901,7 @@ MonoBehaviour:
   noteNum: 0
   NoteType: 
   _notesSpeed: 800
-  noteObj: {fileID: 2909585998287120919, guid: 68e153e99454cfa42ac651a111887069, type: 3}
+  note: {fileID: 179621135201902195, guid: 68e153e99454cfa42ac651a111887069, type: 3}
 --- !u!1 &530832777
 GameObject:
   m_ObjectHideFlags: 0

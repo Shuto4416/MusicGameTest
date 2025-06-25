@@ -33,8 +33,8 @@ namespace InGame {
         }
         void Start()
         {
-            Initialize();
             Load();
+            Initialize();
         }
 
         void VariableInitialize()
@@ -70,11 +70,13 @@ namespace InGame {
 
         void PrepareNote()
         {
-            GameObject noteObj = _notesManager.Create();
-            Notes.Note note = noteObj.GetComponent<Notes.Note>();
+            BaseNote baseNote = _notesManager.Create();
+            Notes.Note note = baseNote.GetComponent<Notes.Note>();
             _notes.Add(note);
-            note.OnClearEvent += () => {
-                    _notesManager.Pop();
+            baseNote.OnClearEvent += () => {
+                    int laneNum = baseNote.LaneNum;
+                    Debug.Log($"{baseNote.LaneNum}");
+                    _notesManager.Pop(baseNote.LaneNum);
                     CreateNote();
                     Debug.Log("Note cleared and created new note.");
                 };
