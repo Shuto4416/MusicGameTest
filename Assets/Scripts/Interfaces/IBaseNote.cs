@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Notes {
-    public interface INote
+    public interface IBaseNote
     {
-        void Move(float BPM);
+        public void Initialize(float lifeSpan, int laneNum);
     }
 }

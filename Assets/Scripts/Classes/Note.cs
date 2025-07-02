@@ -4,14 +4,17 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEngine;
+using TheSingleton;
 
 
 namespace Notes {
     public class Note : BaseNote
     {
-        public override void Initialize(float lifeSpan, int laneNum)
+        public event Action OnSofLanEvent;
+        public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan)
         {
-            base.Initialize(lifeSpan, laneNum);
+            base.Initialize(laneNum,noteType,noteSoftLanding,lifeSpan);
+            base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent);
         }
         public override void ManualUpdate(float BPM)
         {

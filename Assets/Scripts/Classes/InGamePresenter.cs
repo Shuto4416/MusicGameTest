@@ -8,21 +8,23 @@ using Unity.VisualScripting;
 using Zenject;
 using UnityEditor.VersionControl;
 using System;
+using TheSingleton;
 
 namespace InGame {
     public class InGamePresenter : MonoBehaviour
     {
         [SerializeField] private Lights.Light[] _lights = new Lights.Light[6];
         [SerializeField] private NotesManager _notesManager;
+        [SerializeField] private NotesLoader _notesLoader;
         [SerializeField] private int _maxNoteNum = 100; // 最大ノーツ数
         [SerializeField] private int _defaultNoteNum = 60; // 初期ノーツ数
+        [SerializeField] private float _noteSpeed;
         private IInputProvider inputProvider;
 
         private List<Notes.Note> _notes = new List<Notes.Note>();
 
         private string songName = "01 - Re_Unknown X";
         private int CurrentNoteNum;
-        private float CurrentTime;
         private int CurrentNum;
         private float sofLan;
         private List<(float laneNum, float noteTime, int noteSofLan)> _notesData;
@@ -47,24 +49,12 @@ namespace InGame {
         void Update()
         {
             _notesManager.Lock();
-            for (int i = CurrentNum; i < _notesManager.noteNum; i++)
-            {
-                float time = CurrentTime - _notesManager.NotesTime[i];
-                if (Math.Abs(time) <= Time.deltaTime)
-                {
-                    sofLan = _notesManager.NoteSoftLanding[i];
-                    CurrentNum = i;
-                    Debug.Log($"i = {i}, SofLan = {sofLan}");
-                    break;
-                }
-
-            }
             LightController();
             foreach (Notes.Note note in _notes)
             {
-                note.ManualUpdate(_notesManager.NotesSpeed * sofLan/100);
+                note.ManualUpdate(_noteSpeed * sofLan/100);
             }
-            CurrentTime += Time.deltaTime;
+            TimeManager.instance.ManualUpdate();
         }
 
 
@@ -80,6 +70,9 @@ namespace InGame {
                     CreateNote();
                     Debug.Log("Note cleared and created new note.");
                 };
+            note.OnSofLanEvent += () => {
+                sofLan = note.NoteSoftLanding;
+            };
         }
 
 
@@ -88,9 +81,9 @@ namespace InGame {
 
         void CreateNote()
         {
-            if (CurrentNoteNum < _notesManager.noteNum)
+            if (CurrentNoteNum < _notesLoader.NoteNum)
             {
-                _notesManager.CreateNote(CurrentNoteNum);
+                _notesManager.CreateNote(CurrentNoteNum, _noteSpeed, _notesLoader.NotesDatas);
                 CurrentNoteNum++;
                 Debug.Log("Note created: " + CurrentNoteNum);
             }
@@ -98,8 +91,9 @@ namespace InGame {
 
         void Load()
         {
-            _notesManager.Initialize(songName);
-            Debug.Log($"NotesNum: {_notesManager.noteNum}");
+            _notesLoader.Initialize(songName);
+            _notesManager.Initialize(_notesLoader.MaxBlock);
+            Debug.Log($"NotesNum: {_notesLoader.NoteNum}");
         }
 
        
@@ -146,8 +140,8 @@ namespace InGame {
             int NearestTimeNoteNum = -1;
             for (int i = CurrentNum-12 < 0 ? 0 : CurrentNum - 12; i < CurrentNum+12; i++)
             {
-                if(_notesManager.LaneNum[i] != laneNum) continue;
-                float time = CurrentTime - _notesManager.NotesTime[i];
+                if(_notesLoader.NotesDatas[i].laneNum != laneNum) continue;
+                float time = TimeManager.instance.CurrentTime - _notesLoader.NotesDatas[i].noteAbsTime;
                 if (Math.Abs(time) > NearestTime)
                 {
                     NearestTime = time;

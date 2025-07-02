@@ -9,16 +9,23 @@ namespace Notes
     public abstract class BaseNote : MonoBehaviour
     {
         protected List<TriggerEntry> triggers = new();
-        protected float lifeSpan;
         protected int laneNum;
+        protected int noteType;
+        protected int noteSoftLanding;
+        protected float lifeSpan;
 
-        public float LifeSpan => lifeSpan;
         public int LaneNum => laneNum;
+        public int NoteType => noteType;
+        public int NoteSoftLanding => noteSoftLanding;
+        public float LifeSpan => lifeSpan;
 
-        public virtual void Initialize(float lifeSpan, int laneNum)
+
+        public virtual void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan)
         {
-            this.lifeSpan = lifeSpan;
             this.laneNum = laneNum;
+            this.noteType = noteType;
+            this.noteSoftLanding = noteSoftLanding;
+            this.lifeSpan = lifeSpan;
             triggers.Clear();
         }
         protected virtual void Move(float BPM)
