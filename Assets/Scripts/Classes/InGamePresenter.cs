@@ -21,7 +21,7 @@ namespace InGame {
         [SerializeField] private float _noteSpeed;
         private IInputProvider inputProvider;
 
-        private List<Notes.Note> _notes = new List<Notes.Note>();
+        private List<BaseNote> _notes = new List<BaseNote>();
 
         private string songName = "01 - Re_Unknown X";
         private int CurrentNoteNum;
@@ -50,7 +50,7 @@ namespace InGame {
         {
             _notesManager.Lock();
             LightController();
-            foreach (Notes.Note note in _notes)
+            foreach (BaseNote note in _notes)
             {
                 note.ManualUpdate(_noteSpeed * sofLan/100);
             }
@@ -61,17 +61,26 @@ namespace InGame {
         void PrepareNote()
         {
             BaseNote baseNote = _notesManager.Create();
+            BaseNote longNote = _notesManager.LongNoteCreate();
             Notes.Note note = baseNote.GetComponent<Notes.Note>();
+            Notes.LongNote LongNote = longNote.GetComponent<Notes.LongNote>();
             _notes.Add(note);
-            baseNote.OnClearEvent += () => {
-                    int laneNum = baseNote.LaneNum;
-                    Debug.Log($"{baseNote.LaneNum}");
-                    _notesManager.Pop(baseNote.LaneNum);
-                    CreateNote();
+            _notes.Add(LongNote);
+            BindNotes(note);
+            BindNotes(LongNote);
+
+        }
+        void BindNotes(BaseNote note)
+        {
+            note.OnClearEvent += () => {
+                    int laneNum = note.LaneNum;
+                    Debug.Log($"{note.LaneNum}");
+                    _notesManager.Pop(note.LaneNum, note.NoteType);
+                    Generate();
                     Debug.Log("Note cleared and created new note.");
                 };
-            note.OnSofLanEvent += () => {
-                sofLan = note.NoteSoftLanding;
+            note.OnSofLanEvent += (_) => {
+                sofLan = _;
             };
         }
 
@@ -79,11 +88,12 @@ namespace InGame {
 
 
 
-        void CreateNote()
+        void Generate()
         {
             if (CurrentNoteNum < _notesLoader.NoteNum)
             {
-                _notesManager.CreateNote(CurrentNoteNum, _noteSpeed, _notesLoader.NotesDatas);
+                _notesManager.Generate(CurrentNoteNum, _noteSpeed, _notesLoader.NotesDatas);
+                if (_notesLoader.NotesDatas[CurrentNoteNum].noteType == 2) CurrentNum++;
                 CurrentNoteNum++;
                 Debug.Log("Note created: " + CurrentNoteNum);
             }
@@ -125,7 +135,7 @@ namespace InGame {
             }
             for (int i = 0; i < _defaultNoteNum; i++)
             {
-                CreateNote();
+                Generate();
             }
             // Debug.Log($"NoteNum: {_notesManager.noteNum} , NoteData: {_notesManager.LaneNum[0]} , {_notesManager.NotesTime[0] }, {_notesManager.NoteSoftLanding[0] }");
             // for (int i = 0; i < _notesManager.noteNum; i++)

@@ -10,11 +10,11 @@ using TheSingleton;
 namespace Notes {
     public class Note : BaseNote
     {
-        public event Action OnSofLanEvent;
+        public override event Action<int> OnSofLanEvent;
         public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan)
         {
             base.Initialize(laneNum,noteType,noteSoftLanding,lifeSpan);
-            base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent);
+            base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, noteSoftLanding);
         }
         public override void ManualUpdate(float BPM)
         {

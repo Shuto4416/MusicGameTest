@@ -1,0 +1,38 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using JetBrains.Annotations;
+using Unity.VisualScripting;
+using UnityEngine;
+using TheSingleton;
+
+
+namespace Notes {
+    public class LongNote : BaseNote
+    {
+        [SerializeField] private LineRenderer lineRenderer;
+        private Vector3 LineRendererEndPoint;
+        public override event Action<int> OnSofLanEvent;
+        public void Initialize(int laneNum, int noteType, int firstNoteSoftLanding, float firstLifeSpan, int secondNoteSoftLanding, float secondLifeSpan, Vector3 endPoint)
+        {
+            base.Initialize(laneNum,noteType,firstNoteSoftLanding,firstLifeSpan);
+            LineRendererEndPoint = endPoint;
+            lineRenderer.SetPosition(1, new Vector3(0, endPoint.y, 0));
+            base.AddTrigger<int>(() => firstLifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, firstNoteSoftLanding);
+            base.AddTrigger<int>(() => secondLifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, secondNoteSoftLanding);
+        }
+
+
+        public override void ManualUpdate(float BPM)
+        {
+            base.ManualUpdate(BPM);
+            // 画面外に出たらクリアイベントを発火
+            if (transform.position.y + LineRendererEndPoint.y < -5f) // 画面外のY座標を適宜調整
+            {
+                base.Clear();
+                Debug.Log("Note cleared.");
+            }
+        }
+    }
+
+}

@@ -8,7 +8,7 @@ namespace Notes
 {
     public abstract class BaseNote : MonoBehaviour
     {
-        protected List<TriggerEntry> triggers = new();
+        protected List<ITriggerEntry> triggers = new();
         protected int laneNum;
         protected int noteType;
         protected int noteSoftLanding;
@@ -33,6 +33,7 @@ namespace Notes
             transform.position += Vector3.down * (BPM/60f) * Time.deltaTime;
         }
         public event Action OnClearEvent;
+        public virtual event Action<int> OnSofLanEvent;
 
         protected virtual void Clear()
         {
@@ -52,6 +53,11 @@ namespace Notes
         protected void AddTrigger(Func<bool> condition, Action action)
         {
             triggers.Add(new TriggerEntry(condition, action));
+        }
+
+        protected void AddTrigger<T>(Func<bool> condition, Action<T> action, T param)
+        {
+            triggers.Add(new TriggerEntry<T>(condition, action, param));
         }
     }
 }
