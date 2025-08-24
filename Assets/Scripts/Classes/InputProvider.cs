@@ -1,51 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace InputSystem
 {
     public class InputProvider : IInputProvider
     {
-        public bool IsPressedFirstLane()
+        List<KeyCode> keyCodes = new List<KeyCode>()
         {
-            return Input.GetKey(KeyCode.A);
+            KeyCode.A, // 1st lane
+            KeyCode.S, // 2nd lane
+            KeyCode.D, // 3rd lane
+            KeyCode.K, // 4th lane
+            KeyCode.L, // 5th lane
+            KeyCode.Semicolon  // 6th lane
+        };
+        public List<bool> IsPressedAllLanes()
+        {
+            List<bool> pressedStates = keyCodes.Select(k => Input.GetKeyDown(k)).ToList();
+            return pressedStates;
         }
-
-        public bool IsPressedSecondLane()
+        public List<bool> IsGetKeyAllLanes()
         {
-            return Input.GetKey(KeyCode.S);
-        }
-
-        public bool IsPressedThirdLane()
-        {
-            return Input.GetKey(KeyCode.D);
-        }
-
-        public bool IsPressedFourthLane()
-        {
-            return Input.GetKey(KeyCode.K);
-        }
-
-        public bool IsPressedFifthLane()
-        {
-            return Input.GetKey(KeyCode.L);
-        }
-
-        public bool IsPressedSixthLane()
-        {
-            return Input.GetKey(KeyCode.Semicolon);
-        }
-        public bool[] IsPressedAllLanes()
-        {
-            return new bool[]
-            {
-                IsPressedFirstLane(),
-                IsPressedSecondLane(),
-                IsPressedThirdLane(),
-                IsPressedFourthLane(),
-                IsPressedFifthLane(),
-                IsPressedSixthLane()
-            };
+            List<bool> pressedStates = keyCodes.Select(k => Input.GetKey(k)).ToList();
+            return pressedStates;
         }
     }
 }

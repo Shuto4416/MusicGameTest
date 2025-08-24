@@ -10,12 +10,14 @@ using TheSingleton;
 namespace Notes {
     public class LongNote : BaseNote
     {
+        [SerializeField] private Renderer _renderer;
         [SerializeField] private LineRenderer lineRenderer;
         private Vector3 LineRendererEndPoint;
         public override event Action<int> OnSofLanEvent;
         public void Initialize(int laneNum, int noteType, int firstNoteSoftLanding, float firstLifeSpan, int secondNoteSoftLanding, float secondLifeSpan, Vector3 endPoint)
         {
             base.Initialize(laneNum,noteType,firstNoteSoftLanding,firstLifeSpan);
+            Visible();
             LineRendererEndPoint = endPoint;
             lineRenderer.SetPosition(1, new Vector3(0, endPoint.y, 0));
             base.AddTrigger<int>(() => firstLifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, firstNoteSoftLanding);
@@ -33,6 +35,17 @@ namespace Notes {
                 Debug.Log("Note cleared.");
             }
         }
+
+        public void Invisible()
+        {
+            this.enabled = false;
+        }
+
+        public void Visible()
+        {
+            this.enabled = true;
+        }
+
     }
 
 }

@@ -34,7 +34,7 @@ namespace Notes
         }
         public event Action OnClearEvent;
         public virtual event Action<int> OnSofLanEvent;
-
+        
         protected virtual void Clear()
         {
             OnClearEvent?.Invoke();

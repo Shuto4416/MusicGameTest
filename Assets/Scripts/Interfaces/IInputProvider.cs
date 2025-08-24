@@ -6,13 +6,8 @@ namespace InputSystem
 {
     public interface IInputProvider
     {
-        public bool IsPressedFirstLane();
-        public bool IsPressedSecondLane();
-        public bool IsPressedThirdLane();
-        public bool IsPressedFourthLane();
-        public bool IsPressedFifthLane();
-        public bool IsPressedSixthLane();
-        public bool[] IsPressedAllLanes();
+        public List<bool> IsPressedAllLanes();
+        public List<bool> IsGetKeyAllLanes();
     }
 }
 

@@ -10,10 +10,12 @@ using TheSingleton;
 namespace Notes {
     public class Note : BaseNote
     {
+        [SerializeField] private Renderer _renderer;
         public override event Action<int> OnSofLanEvent;
         public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan)
         {
             base.Initialize(laneNum,noteType,noteSoftLanding,lifeSpan);
+            Visible();
             base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, noteSoftLanding);
         }
         public override void ManualUpdate(float BPM)
@@ -26,6 +28,17 @@ namespace Notes {
                 Debug.Log("Note cleared.");
             }
         }
+
+        public void Invisible()
+        {
+            _renderer.enabled = false;
+        }
+
+        public void Visible()
+        {
+            _renderer.enabled = true;
+        }
+
     }
 
 }

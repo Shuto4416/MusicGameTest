@@ -11,6 +11,8 @@ public class NotesManager : MonoBehaviour
         private LinkedList<BaseNote> UnUseNotesObj = new LinkedList<BaseNote>();
         private LinkedList<LongNote> UnUseLongNotesObj = new LinkedList<LongNote>();
 
+        public List<LinkedList<BaseNote>> UsingNotesObjDatas => UsingNotesObj;
+
 
         [SerializeField]
         BaseNote baseNote;
