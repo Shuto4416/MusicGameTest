@@ -28,7 +28,8 @@ namespace InGame {
         private float sofLan;
 
         [Inject]
-        void Injection(IInputProvider inputProvider){
+        void Injection(IInputProvider inputProvider)
+        {
             this.inputProvider = inputProvider;
         }
         void Start()
@@ -47,13 +48,13 @@ namespace InGame {
         void Update()
         {
             _notesManager.Lock();
-            LightController();
             foreach (BaseNote note in _notes)
             {
-                note.ManualUpdate(_noteSpeed * sofLan/100);
+                note.ManualUpdate(_noteSpeed * sofLan / 100);
             }
             TimeManager.instance.ManualUpdate();
-            Push();
+            inputProvider.ManualUpdate();
+            LaneLightUp();
         }
 
 
@@ -71,14 +72,16 @@ namespace InGame {
         }
         void BindNotes(BaseNote note)
         {
-            note.OnClearEvent += () => {
-                    int laneNum = note.LaneNum;
-                    Debug.Log($"{note.LaneNum}");
-                    _notesManager.Pop(note.LaneNum, note.NoteType);
-                    Generate();
-                    Debug.Log("Note cleared and created new note.");
-                };
-            note.OnSofLanEvent += (_) => {
+            note.OnClearEvent += () =>
+            {
+                int laneNum = note.LaneNum;
+                Debug.Log($"{note.LaneNum}");
+                _notesManager.Pop(note.LaneNum, note.NoteType);
+                Generate();
+                Debug.Log("Note cleared and created new note.");
+            };
+            note.OnSofLanEvent += (_) =>
+            {
                 sofLan = _;
             };
         }
@@ -105,18 +108,20 @@ namespace InGame {
             Debug.Log($"NotesNum: {_notesLoader.NoteNum}");
         }
 
-       
-        void LightController()
+        void InputBind()
+        {
+            BindPush();
+        }
+        void LaneLightUp()
         {
             if (_lights.Length == 0)
             {
                 Debug.LogWarning("No lights assigned to InGamePresenter.");
                 return;
             }
-            var inputs = inputProvider.IsPressedAllLanes();
             for (int i = 0; i < _lights.Length; i++)
             {
-                _lights[i].LightController(inputs[i]);
+                _lights[i].LightController(inputProvider.IsPushAllLanes()[i]);
             }
         }
 
@@ -142,27 +147,70 @@ namespace InGame {
             // {
             //     _notesData.Add((_notesManager.LaneNum[i], _notesManager.NotesTime[i], _notesManager.NoteSoftLanding[i]));
             // }
+            inputProvider.Initialize();
+            InputBind();
         }
 
-        void Push()
+        void BindPush()
         {
             Debug.Log("Push");
-            var inputs = inputProvider.IsGetKeyAllLanes();
-            for (int i = 0; i < inputs.Count; i++)
+            for (int i = 0; i < inputProvider.KeyCount(); i++)
             {
-                if (inputs[i]) {
-                    Judge(i);
-
-                }
+                //inputProvider.SubscriptForKeyDownOnceAction(i, () => NoteJudge(i));
+                inputProvider.SubscriptForKeyDownAction(i, () => LongNoteJudge(i));
             }
+            inputProvider.SubscriptForKeyDownOnceAction(0, () => NoteJudge(0));
+            inputProvider.SubscriptForKeyDownOnceAction(1, () => NoteJudge(1));
+            inputProvider.SubscriptForKeyDownOnceAction(2, () => NoteJudge(2));
+            inputProvider.SubscriptForKeyDownOnceAction(3, () => NoteJudge(3));
+            inputProvider.SubscriptForKeyDownOnceAction(4, () => NoteJudge(4));
+            inputProvider.SubscriptForKeyDownOnceAction(5, () => NoteJudge(5));
+
         }
 
-        void Judge(int laneNum)
+        void NoteJudge(int laneNum)
+        {
+            Debug.Log($"Lane {laneNum} pushed");
+            float NearestTime = float.MaxValue;
+            int NearestTimeNoteNum = -1;
+            Notes.Note note = null;
+            Notes.LongNote longNote = null;
+            for (int i = CurrentNoteNum - _defaultNoteNum < 0 ? 0 : CurrentNoteNum - _defaultNoteNum; i < CurrentNoteNum; i++)
+            {
+                if (_notesLoader.NotesDatas[i].laneNum != laneNum) continue;
+                float time = TimeManager.instance.CurrentTime - _notesLoader.NotesDatas[i].noteAbsTime;
+                if (Math.Abs(time) < NearestTime)
+                {
+                    NearestTime = time;
+                    NearestTimeNoteNum = i;
+                }
+            }
+            Debug.Log($"NearestTime: {NearestTime}, NearestTimeNoteNum: {NearestTimeNoteNum}");
+            if (NearestTimeNoteNum == -1) return;
+            // 普通のノーツの時
+            if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 1)
+            {
+                foreach (var _note in _notesManager.UsingNotesObjDatas[laneNum])
+                    if (_note.LifeSpan == _notesLoader.NotesDatas[NearestTimeNoteNum].noteAbsTime)
+                        note = _note.GetComponent<Notes.Note>();
+                if (note.LifeSpan - TimeManager.instance.CurrentTime < 1f / 60f * 13.5f) note.Invisible();
+            }
+            // ロングノーツの時
+            else if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 2)
+            {
+                foreach (var _note in _notesManager.UsingNotesObjDatas[laneNum])
+                    if (_note.LifeSpan == _notesLoader.NotesDatas[NearestTimeNoteNum].noteAbsTime)
+                        longNote = _note.GetComponent<LongNote>();
+                    if (NearestTime < 1f/60f*5f) longNote.Push();
+            }
+            
+        }
+        
+        void LongNoteJudge(int laneNum)
         {
             Debug.Log($"Lane {laneNum} pressed");
             float NearestTime = float.MaxValue;
             int NearestTimeNoteNum = -1;
-            Notes.Note note = null;
             Notes.LongNote longNote = null;
             for (int i = CurrentNoteNum-_defaultNoteNum < 0 ? 0 : CurrentNoteNum - _defaultNoteNum; i < CurrentNoteNum; i++)
             {
@@ -176,16 +224,13 @@ namespace InGame {
             }
             Debug.Log($"NearestTime: {NearestTime}, NearestTimeNoteNum: {NearestTimeNoteNum}");
             if (NearestTimeNoteNum == -1) return;
-            if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 1) {
-                foreach (var _note in _notesManager.UsingNotesObjDatas[laneNum])
-                    if (_note.LifeSpan == _notesLoader.NotesDatas[NearestTimeNoteNum].noteAbsTime)
-                        note = _note.GetComponent<Notes.Note>();
-            } else if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 2) {
+            if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 1) return;
+            if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 2) {
                 foreach (var _note in _notesManager.UsingNotesObjDatas[laneNum])
                     if (_note.LifeSpan == _notesLoader.NotesDatas[NearestTimeNoteNum].noteAbsTime)
                         longNote = _note.GetComponent<LongNote>();
             }
-            if (NearestTime < 1/60*13.5) note.Invisible();
+            if (NearestTime < 1f/60f*5f) longNote.Press();
         }
 
     }
