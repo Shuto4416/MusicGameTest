@@ -14,15 +14,16 @@ using Audio;
         public Note[] notes; // ノーツ情報のリスト
     }
 
-    [Serializable]
-    public class Note
-    {
-        public int type;        // ノーツの種類（通常ノーツ・ロングノーツなど）
-        public int num;         // 何拍目に配置されるか
-        public int block;       // どのレーンに配置されるか
-        public int LPB;         // 1拍あたりの分割数
-        public int softLanding; //　ノーツの速度倍率(100=通常速度, 200=2倍速など)
-    }
+[Serializable]
+public class Note
+{
+    public int type;        // ノーツの種類（通常ノーツ・ロングノーツなど）
+    public int num;         // 何拍目に配置されるか
+    public int block;       // どのレーンに配置されるか
+    public int LPB;         // 1拍あたりの分割数
+    public int softLanding; //　ノーツの速度倍率(100=通常速度, 200=2倍速など)
+    public Note[] notes;
+}
 
     public class NotesData
     {
@@ -42,7 +43,7 @@ using Audio;
         }
     }
 
-public class NotesLoader: MonoBehaviour
+public class NotesLoader : MonoBehaviour
 {
     //総ノーツ数
     private int noteNum;
@@ -55,36 +56,45 @@ public class NotesLoader: MonoBehaviour
     public List<NotesData> NotesDatas => notesDatas;
 
     public void Initialize(string songName)
+    {
+        //総ノーツを0にする
+        noteNum = 0;
+        //読み込む譜面のファイル名を入力
+
+        Load(songName);
+        SoundManager.instance.PlayBGM(BGMFile.GameScene);
+    }
+
+    private void Load(string SongName)
+    {
+        // jsonファイルを読み込む
+        string inputString = Resources.Load<TextAsset>(SongName).ToString();
+        Data inputJson = JsonUtility.FromJson<Data>(inputString);
+        //for (int i = 0; i < inputJson.notes.Length; i++) Debug.Log($" type: {inputJson.notes[i].type}, num: {inputJson.notes[i].num}, block: {inputJson.notes[i].block}, LPB: {inputJson.notes[i].LPB}, softLanding: {inputJson.notes[i].softLanding}");
+
+        //総ノーツ数を設定
+        noteNum = inputJson.notes.Length;
+        Debug.Log($"総ノーツ数: {noteNum}, 曲名: {inputJson.name}, BPM: {inputJson.BPM}, オフセット: {inputJson.offset}");
+        Debug.Log($"ノーツ1 LPB: {inputJson.notes[0].LPB}");
+        maxBlock = inputJson.maxBlock;
+        CreateNotesList(inputJson, inputJson.notes);
+        for (int i = 0; i < notesDatas.Count; i++)
         {
-            //総ノーツを0にする
-            noteNum = 0;
-            //読み込む譜面のファイル名を入力
-
-            Load(songName);
-            SoundManager.instance.PlayBGM(BGMFile.GameScene);
+            notesDatas[i].noteRelTime = i != 0 ? notesDatas[i].noteAbsTime - notesDatas[i - 1].noteAbsTime : notesDatas[i].noteAbsTime;
         }
+        for (int i = 0; i < notesDatas.Count; i++) Debug.Log($" type: {notesDatas[i].noteType}, lanenum: {notesDatas[i].laneNum}, AbsTime: {notesDatas[i].noteAbsTime}, RelTime: {notesDatas[i].noteRelTime}, softLanding: {notesDatas[i].noteSoftLanding}");
+    }
 
-        private void Load(string SongName)
+    private void CreateNotesList(Data inputJson, Note[] notes)
+    {
+        for (int i = 0; i < notes.Length; i++)
         {
-            // jsonファイルを読み込む
-            string inputString = Resources.Load<TextAsset>(SongName).ToString();
-            Data inputJson = JsonUtility.FromJson<Data>(inputString);
-
-            //総ノーツ数を設定
-            noteNum = inputJson.notes.Length;
-            Debug.Log($"総ノーツ数: {noteNum}, 曲名: {inputJson.name}, BPM: {inputJson.BPM}, オフセット: {inputJson.offset}");
-            Debug.Log($"ノーツ1 LPB: {inputJson.notes[0].LPB}");
-            maxBlock = inputJson.maxBlock;
-
-
-            for (int i = 0; i < inputJson.notes.Length; i++)
-            {
-                //時間を計算
-                float absTime = (60 / (inputJson.BPM * (float)inputJson.notes[i].LPB) * inputJson.notes[i].num)/* + inputJson.offset * 0.01f*/;
-                float relTime = i != 0 ? absTime - 60 / (inputJson.BPM * (float)inputJson.notes[i-1].LPB) * inputJson.notes[i-1].num : absTime;
-                //リストに追加
-                notesDatas.Add(new NotesData(inputJson.notes[i].block, inputJson.notes[i].type, inputJson.notes[i].softLanding, absTime, relTime));
-            }
+            //時間を計算
+            float absTime = (60 / (inputJson.BPM * (float)notes[i].LPB) * notes[i].num)/* + inputJson.offset * 0.01f*/;
+            //リストに追加
+            notesDatas.Add(new NotesData(notes[i].block, notes[i].type, notes[i].softLanding, absTime, 0));
+            if (notes[i].notes != null) CreateNotesList(inputJson, notes[i].notes);
         }
+    }
 
 }

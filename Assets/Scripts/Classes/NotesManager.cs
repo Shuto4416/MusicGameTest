@@ -62,7 +62,7 @@ public class NotesManager : MonoBehaviour
                     LongNote note = UnUseLongNotesObj.First.Value;
                     UnUseLongNotesObj.RemoveFirst();
                     UsingNotesObj[notesDatas[i].laneNum].AddLast(note);
-                    Vector3 endPoint = GeneratePosition(i+1, NotesSpeed, notesDatas);
+                    Vector3 endPoint = new Vector3(-2.5f + notesDatas[i].laneNum, NotesSpeed/60f * (notesDatas[i+1].noteAbsTime - notesDatas[i].noteAbsTime) * notesDatas[i-1].noteSoftLanding / 100f, -1);
                     note.Initialize(notesDatas[i].laneNum, notesDatas[i].noteType, notesDatas[i].noteSoftLanding, notesDatas[i].noteAbsTime, notesDatas[i+1].noteSoftLanding, notesDatas[i+1].noteAbsTime, endPoint);
                     note.gameObject.SetActive(true);
                     note.transform.position = vector3;

@@ -154,23 +154,26 @@ namespace InGame {
         void BindPush()
         {
             Debug.Log("Push");
-            for (int i = 0; i < inputProvider.KeyCount(); i++)
-            {
-                //inputProvider.SubscriptForKeyDownOnceAction(i, () => NoteJudge(i));
-                inputProvider.SubscriptForKeyDownAction(i, () => LongNoteJudge(i));
-            }
+
             inputProvider.SubscriptForKeyDownOnceAction(0, () => NoteJudge(0));
             inputProvider.SubscriptForKeyDownOnceAction(1, () => NoteJudge(1));
             inputProvider.SubscriptForKeyDownOnceAction(2, () => NoteJudge(2));
             inputProvider.SubscriptForKeyDownOnceAction(3, () => NoteJudge(3));
             inputProvider.SubscriptForKeyDownOnceAction(4, () => NoteJudge(4));
             inputProvider.SubscriptForKeyDownOnceAction(5, () => NoteJudge(5));
+            inputProvider.SubscriptForKeyDownAction(0, () => LongNoteJudge(0));
+            inputProvider.SubscriptForKeyDownAction(1, () => LongNoteJudge(1));
+            inputProvider.SubscriptForKeyDownAction(2, () => LongNoteJudge(2));
+            inputProvider.SubscriptForKeyDownAction(3, () => LongNoteJudge(3));
+            inputProvider.SubscriptForKeyDownAction(4, () => LongNoteJudge(4));
+            inputProvider.SubscriptForKeyDownAction(5, () => LongNoteJudge(5));
+
 
         }
+        
 
         void NoteJudge(int laneNum)
         {
-            Debug.Log($"Lane {laneNum} pushed");
             float NearestTime = float.MaxValue;
             int NearestTimeNoteNum = -1;
             Notes.Note note = null;
@@ -185,30 +188,30 @@ namespace InGame {
                     NearestTimeNoteNum = i;
                 }
             }
-            Debug.Log($"NearestTime: {NearestTime}, NearestTimeNoteNum: {NearestTimeNoteNum}");
             if (NearestTimeNoteNum == -1) return;
             // 普通のノーツの時
             if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 1)
             {
                 foreach (var _note in _notesManager.UsingNotesObjDatas[laneNum])
                     if (_note.LifeSpan == _notesLoader.NotesDatas[NearestTimeNoteNum].noteAbsTime)
-                        note = _note.GetComponent<Notes.Note>();
-                if (note.LifeSpan - TimeManager.instance.CurrentTime < 1f / 60f * 13.5f) note.Invisible();
+                        note = _note?.GetComponent<Notes.Note>();
+                if (note == null) return;
+                if (note.LifeSpan - TimeManager.instance.CurrentTime < 1f / 60f * 13.5f) note.Push();
             }
             // ロングノーツの時
             else if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 2)
             {
                 foreach (var _note in _notesManager.UsingNotesObjDatas[laneNum])
                     if (_note.LifeSpan == _notesLoader.NotesDatas[NearestTimeNoteNum].noteAbsTime)
-                        longNote = _note.GetComponent<LongNote>();
-                    if (NearestTime < 1f/60f*5f) longNote.Push();
+                        longNote = _note?.GetComponent<LongNote>();
+                if (longNote == null) return;
+                if (NearestTime < 1f / 60f * 13.5f) longNote.Push();
             }
             
         }
         
         void LongNoteJudge(int laneNum)
         {
-            Debug.Log($"Lane {laneNum} pressed");
             float NearestTime = float.MaxValue;
             int NearestTimeNoteNum = -1;
             Notes.LongNote longNote = null;
@@ -222,15 +225,16 @@ namespace InGame {
                     NearestTimeNoteNum = i;
                 }
             }
-            Debug.Log($"NearestTime: {NearestTime}, NearestTimeNoteNum: {NearestTimeNoteNum}");
             if (NearestTimeNoteNum == -1) return;
             if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 1) return;
-            if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 2) {
+            if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 2)
+            {
                 foreach (var _note in _notesManager.UsingNotesObjDatas[laneNum])
                     if (_note.LifeSpan == _notesLoader.NotesDatas[NearestTimeNoteNum].noteAbsTime)
                         longNote = _note.GetComponent<LongNote>();
+                if (longNote == null) return;
             }
-            if (NearestTime < 1f/60f*5f) longNote.Press();
+            if (TimeManager.instance.CurrentTime - longNote.LifeSpan > -1f/60f*13.5f) longNote.Press();
         }
 
     }

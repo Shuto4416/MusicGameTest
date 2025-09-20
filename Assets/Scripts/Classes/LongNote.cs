@@ -15,30 +15,41 @@ namespace Notes {
         private Vector3 LineRendererEndPoint;
         private bool isPushed = false;
         private int pushFrameCount = 0;
-        private float secondLifeSpan;
-        public float SecondLifeSpan => secondLifeSpan;
+        private float _secondLifeSpan;
+        public float SecondLifeSpan => _secondLifeSpan;
         public override event Action<int> OnSofLanEvent;
         public void Initialize(int laneNum, int noteType, int firstNoteSoftLanding, float firstLifeSpan, int secondNoteSoftLanding, float secondLifeSpan, Vector3 endPoint)
         {
+            _secondLifeSpan = secondLifeSpan;
             base.Initialize(laneNum, noteType, firstNoteSoftLanding, firstLifeSpan);
-            Visible();
+            isPushed = false;
             LineRendererEndPoint = endPoint;
-            this.secondLifeSpan = secondLifeSpan;
-            lineRenderer.SetPosition(1, new Vector3(0, endPoint.y, 0));
+            Debug.Log($"firstLifeSpan: {firstLifeSpan}, secondLifeSpan: {_secondLifeSpan}");
+            Visible();
             base.AddTrigger<int>(() => firstLifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, firstNoteSoftLanding);
-            base.AddTrigger<int>(() => secondLifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, secondNoteSoftLanding);
+            base.AddTrigger<int>(() => _secondLifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, secondNoteSoftLanding);
+            base.AddTrigger(() => _secondLifeSpan - TimeManager.instance.CurrentTime < 0, () => Judge());
         }
 
 
         public override void ManualUpdate(float BPM)
         {
-            if (base.lifeSpan + 1 / 60 * 13.5 - TimeManager.instance.CurrentTime < 0)
+            if (base.lifeSpan + 1f / 60f * 13.5f - TimeManager.instance.CurrentTime < 0 && !isPushed)
             {
-                if (isPushed && pushFrameCount > 0)
+                Debug.Log("Miss2");
+                Invisible();
+            }
+            if (isPushed && _secondLifeSpan - TimeManager.instance.CurrentTime > 0)
+            {
+                if (pushFrameCount > 0)
                 {
                     pushFrameCount--;
                 }
-                else Invisible();
+                else
+                {
+                    Invisible();
+                    Debug.Log("Miss");
+                }
             }
             base.ManualUpdate(BPM);
             // 画面外に出たらクリアイベントを発火
@@ -52,21 +63,41 @@ namespace Notes {
 
         public void Invisible()
         {
-            this.enabled = false;
+            _renderer.enabled = false;
+            lineRenderer.SetPosition(1, new Vector3(0, 0, 0));
         }
 
         public void Visible()
         {
-            this.enabled = true;
+            _renderer.enabled = true;
+            lineRenderer.SetPosition(1, new Vector3(0, LineRendererEndPoint.y, 0));
         }
 
         public void Press()
         {
-            pushFrameCount = 2;
+            Debug.Log("Pressed");
+            pushFrameCount += 2;
         }
         public void Push()
         {
+            Debug.Log("Pushed");
             isPushed = true;
+            pushFrameCount = 5;
+        }
+        private void Judge()
+        {
+            Debug.Log("Judge");
+            if (isPushed && pushFrameCount > 0)
+            {
+                Debug.Log($"isPushed: {isPushed}, pushFrameCount: {pushFrameCount}");
+                Invisible();
+                Debug.Log("P");
+            } else
+            {
+                Debug.Log($"isPushed: {isPushed}, pushFrameCount: {pushFrameCount}");
+                Debug.Log("Miss3");
+                Invisible();
+            }
         }
 
     }

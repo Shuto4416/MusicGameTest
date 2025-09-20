@@ -12,9 +12,11 @@ namespace Notes {
     {
         [SerializeField] private Renderer _renderer;
         public override event Action<int> OnSofLanEvent;
+        private bool isPushed = false;
         public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan)
         {
-            base.Initialize(laneNum,noteType,noteSoftLanding,lifeSpan);
+            base.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan);
+            isPushed = false;
             Visible();
             base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, noteSoftLanding);
         }
@@ -27,6 +29,18 @@ namespace Notes {
                 base.Clear();
                 Debug.Log("Note cleared.");
             }
+            if (base.lifeSpan + 1f / 60f * 13.5f - TimeManager.instance.CurrentTime < 0)
+            {
+                if (!isPushed)
+                {
+                    Invisible();
+                }
+            }
+        }
+        public void Push()
+        {
+            isPushed = true;
+            Invisible();
         }
 
         public void Invisible()
