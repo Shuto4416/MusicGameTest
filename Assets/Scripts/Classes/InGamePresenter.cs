@@ -13,9 +13,11 @@ using TheSingleton;
 namespace InGame {
     public class InGamePresenter : MonoBehaviour
     {
-        [SerializeField] private Lights.Light[] _lights = new Lights.Light[6];
+        [SerializeField] private InGameModel _model;
+        [SerializeField] private InGameView _view;
+        private Lights.Light[] _lights => _view.Lights;
         [SerializeField] private NotesManager _notesManager;
-        [SerializeField] private NotesLoader _notesLoader;
+        private NotesLoader _notesLoader => _model.NotesLoader;
         [SerializeField] private int _maxNoteNum = 100; // 最大ノーツ数
         [SerializeField] private int _defaultNoteNum = 60; // 初期ノーツ数
         [SerializeField] private float _noteSpeed;

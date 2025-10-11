@@ -18,10 +18,10 @@ namespace Notes {
         private float _secondLifeSpan;
         public float SecondLifeSpan => _secondLifeSpan;
         public override event Action<int> OnSofLanEvent;
-        public void Initialize(int laneNum, int noteType, int firstNoteSoftLanding, float firstLifeSpan, int secondNoteSoftLanding, float secondLifeSpan, Vector3 endPoint)
+        public void Initialize(int laneNum, int noteType, int firstNoteSoftLanding, float firstLifeSpan, int secondNoteSoftLanding, float secondLifeSpan, int isCritical, Vector3 endPoint)
         {
             _secondLifeSpan = secondLifeSpan;
-            base.Initialize(laneNum, noteType, firstNoteSoftLanding, firstLifeSpan);
+            base.Initialize(laneNum, noteType, firstNoteSoftLanding, firstLifeSpan, isCritical);
             isPushed = false;
             LineRendererEndPoint = endPoint;
             Debug.Log($"firstLifeSpan: {firstLifeSpan}, secondLifeSpan: {_secondLifeSpan}");

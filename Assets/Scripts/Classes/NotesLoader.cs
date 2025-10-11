@@ -22,6 +22,7 @@ public class Note
     public int block;       // どのレーンに配置されるか
     public int LPB;         // 1拍あたりの分割数
     public int softLanding; //　ノーツの速度倍率(100=通常速度, 200=2倍速など)
+    public int isCritical;
     public Note[] notes;
 }
 
@@ -30,14 +31,16 @@ public class Note
         public int laneNum;
         public int noteType;
         public int noteSoftLanding;
+        public int isCritical;
         public float noteAbsTime;
         public float noteRelTime;
 
-        public NotesData(int laneNum, int noteType, int noteSoftLanding, float noteAbsTime, float noteRelTime)
+        public NotesData(int laneNum, int noteType, int noteSoftLanding, int isCritical,float noteAbsTime, float noteRelTime)
         {
             this.laneNum = laneNum;
             this.noteType = noteType;
             this.noteSoftLanding = noteSoftLanding;
+            this.isCritical = isCritical;
             this.noteAbsTime = noteAbsTime;
             this.noteRelTime = noteRelTime;
         }
@@ -82,7 +85,7 @@ public class NotesLoader : MonoBehaviour
         {
             notesDatas[i].noteRelTime = i != 0 ? notesDatas[i].noteAbsTime - notesDatas[i - 1].noteAbsTime : notesDatas[i].noteAbsTime;
         }
-        for (int i = 0; i < notesDatas.Count; i++) Debug.Log($" type: {notesDatas[i].noteType}, lanenum: {notesDatas[i].laneNum}, AbsTime: {notesDatas[i].noteAbsTime}, RelTime: {notesDatas[i].noteRelTime}, softLanding: {notesDatas[i].noteSoftLanding}");
+        for (int i = 0; i < notesDatas.Count; i++) Debug.Log($" type: {notesDatas[i].noteType}, lanenum: {notesDatas[i].laneNum}, AbsTime: {notesDatas[i].noteAbsTime}, RelTime: {notesDatas[i].noteRelTime}, softLanding: {notesDatas[i].noteSoftLanding}, isCritical: {notesDatas[i].isCritical}");
     }
 
     private void CreateNotesList(Data inputJson, Note[] notes)
@@ -92,7 +95,7 @@ public class NotesLoader : MonoBehaviour
             //時間を計算
             float absTime = (60 / (inputJson.BPM * (float)notes[i].LPB) * notes[i].num)/* + inputJson.offset * 0.01f*/;
             //リストに追加
-            notesDatas.Add(new NotesData(notes[i].block, notes[i].type, notes[i].softLanding, absTime, 0));
+            notesDatas.Add(new NotesData(notes[i].block, notes[i].type, notes[i].softLanding, notes[i].isCritical , absTime, 0));
             if (notes[i].notes != null) CreateNotesList(inputJson, notes[i].notes);
         }
     }

@@ -13,19 +13,22 @@ namespace Notes
         protected int noteType;
         protected int noteSoftLanding;
         protected float lifeSpan;
+        protected int isCritical;
 
         public int LaneNum => laneNum;
         public int NoteType => noteType;
         public int NoteSoftLanding => noteSoftLanding;
         public float LifeSpan => lifeSpan;
+        public int IsCritical => isCritical;
 
 
-        public virtual void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan)
+        public virtual void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical)
         {
             this.laneNum = laneNum;
             this.noteType = noteType;
             this.noteSoftLanding = noteSoftLanding;
             this.lifeSpan = lifeSpan;
+            this.isCritical = isCritical;
             triggers.Clear();
         }
         protected virtual void Move(float BPM)

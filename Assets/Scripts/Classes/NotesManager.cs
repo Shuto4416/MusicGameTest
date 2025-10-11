@@ -63,7 +63,7 @@ public class NotesManager : MonoBehaviour
                     UnUseLongNotesObj.RemoveFirst();
                     UsingNotesObj[notesDatas[i].laneNum].AddLast(note);
                     Vector3 endPoint = new Vector3(-2.5f + notesDatas[i].laneNum, NotesSpeed/60f * (notesDatas[i+1].noteAbsTime - notesDatas[i].noteAbsTime) * notesDatas[i-1].noteSoftLanding / 100f, -1);
-                    note.Initialize(notesDatas[i].laneNum, notesDatas[i].noteType, notesDatas[i].noteSoftLanding, notesDatas[i].noteAbsTime, notesDatas[i+1].noteSoftLanding, notesDatas[i+1].noteAbsTime, endPoint);
+                    note.Initialize(notesDatas[i].laneNum, notesDatas[i].noteType, notesDatas[i].noteSoftLanding, notesDatas[i].noteAbsTime, notesDatas[i+1].noteSoftLanding, notesDatas[i+1].noteAbsTime, notesDatas[i].isCritical, endPoint);
                     note.gameObject.SetActive(true);
                     note.transform.position = vector3;
                 }
@@ -114,9 +114,9 @@ public class NotesManager : MonoBehaviour
         }
     }
 
-    public void NoteInitialize(BaseNote note, int laneNum, int noteType, int noteSoftLanding, float lifeSpan)
+    public void NoteInitialize(BaseNote note, int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical = 0)
     {
-        note.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan);
+        note.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan, isCritical);
     }
 
 

@@ -13,9 +13,9 @@ namespace Notes {
         [SerializeField] private Renderer _renderer;
         public override event Action<int> OnSofLanEvent;
         private bool isPushed = false;
-        public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan)
+        public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical)
         {
-            base.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan);
+            base.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan, isCritical);
             isPushed = false;
             Visible();
             base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, noteSoftLanding);

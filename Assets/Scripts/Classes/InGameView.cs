@@ -10,7 +10,8 @@ using UnityEditor.VersionControl;
 
 namespace InGame{
     public class InGameView : MonoBehaviour {
-        
+        [SerializeField] private Lights.Light[] _lights = new Lights.Light[6];
+        public Lights.Light[] Lights => _lights;
     }
     //[SerializeField] private Lights.Light[] _lights = new Lights.Light[6];
 }
