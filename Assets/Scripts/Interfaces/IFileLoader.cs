@@ -70,6 +70,6 @@ namespace Interface.FileLoader
     public interface IFileLoader
     {
         public void ReadFile();
-        public LinkedList<SongComponent>[] GenerateSongComponents();
+        public List<LinkedList<SongComponent>> GenerateSongComponents();
     }
 }

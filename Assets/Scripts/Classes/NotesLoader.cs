@@ -58,21 +58,20 @@ public class NotesLoader : MonoBehaviour
     public int MaxBlock => maxBlock;
     public List<NotesData> NotesDatas => notesDatas;
 
-    public void Initialize(string songName)
+    public void Initialize(string jsonData)
     {
         //総ノーツを0にする
         noteNum = 0;
         //読み込む譜面のファイル名を入力
 
-        Load(songName);
-        SoundManager.instance.PlayBGM(BGMFile.GameScene);
+        Load(jsonData);
+        // SoundManager.instance.PlayBGM(BGMFile.GameScene);
     }
 
-    private void Load(string SongName)
+    private void Load(string jsonData)
     {
         // jsonファイルを読み込む
-        string inputString = Resources.Load<TextAsset>(SongName).ToString();
-        Data inputJson = JsonUtility.FromJson<Data>(inputString);
+        Data inputJson = JsonUtility.FromJson<Data>(jsonData);
         //for (int i = 0; i < inputJson.notes.Length; i++) Debug.Log($" type: {inputJson.notes[i].type}, num: {inputJson.notes[i].num}, block: {inputJson.notes[i].block}, LPB: {inputJson.notes[i].LPB}, softLanding: {inputJson.notes[i].softLanding}");
 
         //総ノーツ数を設定

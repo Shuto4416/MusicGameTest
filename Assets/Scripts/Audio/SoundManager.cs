@@ -33,6 +33,7 @@ namespace Audio {
         public AudioSource _audioSourceSE;
         public AudioClip[] _audioClipsSE;
         private BGM_STATE bGM_STATE;
+        public BGM_STATE BGM_STATE => BGM_STATE;
         private AudioClip readAudioClip;
 
         public void PlayBGM(BGMFile fileName)
@@ -42,9 +43,6 @@ namespace Audio {
             {
                 default:
                 case BGMFile.Silence:
-                    break;
-                case BGMFile.GameScene:
-                    _audioSourceBGM.clip = _audioClipsBGM[0];
                     break;
             }
             _audioSourceBGM.Play();

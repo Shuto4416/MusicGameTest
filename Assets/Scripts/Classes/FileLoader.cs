@@ -4,21 +4,21 @@ using UnityEngine;
 using Interface.FileLoader;
 using System.IO;
 using System;
-using Microsoft.Unity.VisualStudio.Editor;
 using SongDatas;
-using Zenject.ReflectionBaking.Mono.Cecil;
-using System.Runtime.CompilerServices;
-using TMPro;
 
 namespace Classes.FileLoader
 {
     public class FileLoader : IFileLoader
     {
-        private const string _defaultPath = "Test";
+        private const string _defaultPath = "SongDatas";
 
-        public LinkedList<SongComponent>[] GenerateSongComponents()
+        public List<LinkedList<SongComponent>> GenerateSongComponents()
         {
-            LinkedList<SongComponent>[] songComponents = new LinkedList<SongComponent>[4];
+            List<LinkedList<SongComponent>> songComponents = new List<LinkedList<SongComponent>>();
+            for (int i = 0; i < 4; i++)
+            {
+                songComponents.Add(new LinkedList<SongComponent>());
+            }
             string path = Application.dataPath + "/" + _defaultPath;
             byte[] texture = null;
             AudioClip audioClip = null;
@@ -41,21 +41,25 @@ namespace Classes.FileLoader
                         LinkedListNode<SongComponent> easyNode = null, normalNode = null, hardNode = null, expertNode = null;
                         if (easy.Item1 != null)
                         {
+                            Debug.Log("easyAdd");
                             SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Easy, difficultyNum: easy.Item1, beatMapData: easy.Item2);
                             easyNode = AddBeatMap(Component, ref songComponents);
                         }
                         if (normal.Item1 != null)
                         {
+                            Debug.Log("normalAdd");
                             SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Normal, difficultyNum: normal.Item1, beatMapData: normal.Item2);
                             normalNode = AddBeatMap(Component, ref songComponents);
                         }
                         if (hard.Item1 != null)
                         {
+                            Debug.Log("hardAdd");
                             SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Hard, difficultyNum: hard.Item1, beatMapData: hard.Item2);
                             hardNode = AddBeatMap(Component, ref songComponents);
                         }
                         if (expert.Item1 != null)
                         {
+                            Debug.Log("ExpertAdd");
                             SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Expert, difficultyNum: expert.Item1, beatMapData: expert.Item2);
                             expertNode = AddBeatMap(Component, ref songComponents);
                         }
@@ -63,7 +67,7 @@ namespace Classes.FileLoader
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError(e);
+                        Debug.LogError($"FileLoader: Error: {e}");
                     }
                 }
             }
@@ -99,9 +103,10 @@ namespace Classes.FileLoader
             NodeSet(ref linkedListNode);
         }
 
-        public LinkedListNode<SongComponent> AddBeatMap(SongComponent songComponent, ref LinkedList<SongComponent>[] songComponents)
+        public LinkedListNode<SongComponent> AddBeatMap(SongComponent songComponent, ref List<LinkedList<SongComponent>> songComponents)
         {
-            int num;
+            int num = -1;
+            int count;
             switch (songComponent.songDifficulty)
             {
                 case SongDifficulty.Easy:
@@ -113,14 +118,36 @@ namespace Classes.FileLoader
                 case SongDifficulty.Hard:
                     num = 2;
                     break;
-                default:
+                case SongDifficulty.Expert:
                     num = 3;
                     break;
             }
-            if (songComponents[num].Count == 0)
+            if (num == -1)
             {
-                songComponents[num].AddFirst(songComponent);
-                return songComponents[num].First;
+                Debug.LogError("num = -1");
+            }
+            try
+            {
+                Debug.Log(songComponents[num].Count);
+                count = songComponents[num].Count;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"songComponents[num].Count << Error! : {e}");
+                count = 0;
+            }
+            if (count == 0)
+            {
+                Debug.Log($"songComponents[{num}].Count == 0");
+                try
+                {
+                    songComponents[num].AddFirst(songComponent);
+                    return songComponents[num].First;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"FailedAddList: {e}");
+                }
             }
             LinkedListNode<SongComponent> linkedListNode = songComponents[num].First;
             while (songComponent.difficultyNum < linkedListNode.Value.difficultyNum)
@@ -131,6 +158,7 @@ namespace Classes.FileLoader
                 }
                 catch (Exception e)
                 {
+                    Debug.LogError($"AddBeatMap: Error :{e}");
                     songComponents[num].AddLast(songComponent);
                     return songComponents[num].Last;
                 }
@@ -205,12 +233,16 @@ namespace Classes.FileLoader
             foreach (var directory in directoryInfo.GetDirectories())
             {
                 var directoryName = directory.Name.ToLower().Split("_");
-                string difficultyStr;
+                foreach (var str in directoryName)
+                {
+                    Debug.Log(str);
+                }
+                string difficultyStr = null;
                 if (difficulty == SongDifficulty.Easy) difficultyStr = "easy";
                 if (difficulty == SongDifficulty.Normal) difficultyStr = "normal";
                 if (difficulty == SongDifficulty.Hard) difficultyStr = "hard";
-                else difficultyStr = "expert";
-
+                if (difficulty == SongDifficulty.Expert)difficultyStr = "expert";
+                Debug.Log(difficultyStr.ToLower());
                 if (difficultyStr.ToLower() == directoryName[0])
                 {
                     if (directoryName[1] == null)

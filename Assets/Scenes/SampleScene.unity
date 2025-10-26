@@ -2663,8 +2663,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _audioSourceBGM: {fileID: 900003407}
-  _audioClipsBGM:
-  - {fileID: 8300000, guid: e4ea7fe63f29ec141ae14f47092ed46d, type: 3}
+  _audioClipsBGM: []
   _audioSourceSE: {fileID: 900003406}
   _audioClipsSE: []
 --- !u!82 &900003406

@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.VisualScripting;
 using Zenject;
-using UnityEditor.VersionControl;
 
 namespace InGame{
     public class InGameView : MonoBehaviour

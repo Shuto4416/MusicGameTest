@@ -13,6 +13,8 @@ namespace InputSystem
         public bool Down();
         public bool Right();
         public bool Left();
+        public bool Enter();
+        public void ManualUpdate();
     }
 }
 

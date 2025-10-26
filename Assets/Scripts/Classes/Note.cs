@@ -53,7 +53,7 @@ namespace Notes {
 
         private void Judge()
         {
-            Debug.Log("Miss!!");
+            Debug.Log($"{TimeManager.instance.CurrentTime} : Miss!!");
             Invisible();
             isPushed = true;
             JudgeDisplay(NotesJudgeState.Miss);

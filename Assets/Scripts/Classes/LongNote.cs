@@ -63,6 +63,7 @@ namespace Notes {
                 if (isBad && _renderer.enabled)
                 {
                     isJudged = true;
+                    Debug.Log("Miss4");
                     JudgeDisplayEvent?.Invoke(NotesJudgeState.Miss);
                 }
             }

@@ -18,6 +18,10 @@ namespace ZenjectSample
                 .Bind<IFileLoader>()
                 .To<FileLoader>()
                 .AsCached();
+            Container
+                .Bind<ISelectInputProvider>()
+                .To<SelectInputProvider>()
+                .AsCached();
         }
     }
 }

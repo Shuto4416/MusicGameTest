@@ -7,12 +7,16 @@ using UnityEngine;
 using Unity.VisualScripting;
 using UnityEngine.UI;
 using Zenject;
-using UnityEditor.VersionControl;
 using System;
+using Cysharp.Threading.Tasks;
 using TheSingleton;
 using System.ComponentModel.Design;
 using SongDatas;
 using R3.Triggers;
+using Audio;
+using UnityEngine.Rendering;
+using System.Threading;
+
 
 public enum GameState
 {
@@ -38,11 +42,10 @@ namespace InGame
         private IInputProvider inputProvider;
         private ISelectInputProvider selectInputProvider;
         private List<BaseNote> _notes = new List<BaseNote>();
-
         private string songName = "01 - Re_Unknown X";
         private int CurrentNoteNum;
         private float sofLan;
-        private LinkedList<SongComponent>[] songComponents;
+        private List<LinkedList<SongComponent>> songComponents;
         private LinkedListNode<SongComponent> currentSong;
         private SongDifficulty currentSongDifficulty;
         private GameState gameState = GameState.Wait;
@@ -52,6 +55,7 @@ namespace InGame
         {
             this.inputProvider = inputProvider;
         }
+        [Inject]
         void SelectInjection(ISelectInputProvider selectInputProvider)
         {
             this.selectInputProvider = selectInputProvider;
@@ -65,19 +69,40 @@ namespace InGame
             }
             catch
             {
-                currentSong = null;
+                currentSong.Value = null;
             }
             currentSongDifficulty = SongDifficulty.Easy;
             for (int i = 0; i < _maxNoteNum; i++)
             {
                 PrepareNote();
             }
+            SelectSongInitialize();
+        }
+
+        void SelectSongInitialize()
+        {
+            _view.SongFrameManager.Show();
+            _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
             gameState = GameState.SelectSong;
         }
 
         void StartGame()
         {
-            Initialize();
+            Initialize(destroyCancellationToken).Forget();
+        }
+
+        SongComponent isCurrentSongNull(LinkedListNode<SongComponent> linkedListNode)
+        {
+            try
+            {
+                if (linkedListNode.Value != null)
+                    return linkedListNode.Value;
+            }
+            catch
+            {
+                return null;
+            }
+            return null;
         }
 
 
@@ -90,6 +115,7 @@ namespace InGame
         // Update is called once per frame
         void Update()
         {
+            SoundManager.instance.ManualUpdate();
             _notesManager.Lock();
             switch (gameState)
             {
@@ -109,16 +135,16 @@ namespace InGame
             DifficultyDown();
             NextSong();
             PrevSong();
+            EnterSong();
         }
 
         private void DifficultyUp()
         {
             if (selectInputProvider.DifficultyUp())
             {
-                var difficulty = AddDifficulty(currentSong.Value.songDifficulty);
-                currentSongDifficulty = difficulty;
-                DifficultyChange(difficulty);
-                _view.SongFrameManager.ChangeSong(true, currentSong.Value);
+                currentSongDifficulty = AddDifficulty(currentSongDifficulty);
+                DifficultyChange(currentSongDifficulty);
+                _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
             }
         }
         
@@ -126,10 +152,9 @@ namespace InGame
         {
             if (selectInputProvider.DifficultyDown())
             {
-                var difficulty = ReduceDifficulty(currentSong.Value.songDifficulty);
-                currentSongDifficulty = difficulty;
-                DifficultyChange(difficulty);
-                _view.SongFrameManager.ChangeSong(true, currentSong.Value);
+                currentSongDifficulty = ReduceDifficulty(currentSongDifficulty);
+                DifficultyChange(currentSongDifficulty);
+                _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
             }
         }
 
@@ -152,6 +177,7 @@ namespace InGame
                         currentSong.Value = null;
                     }
                 }
+                _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
             }
         }
 
@@ -173,6 +199,20 @@ namespace InGame
                     {
                         currentSong.Value = null;
                     }
+                }
+                _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+            }
+        }
+
+        private void EnterSong()
+        {
+            if (selectInputProvider.Enter())
+            {
+                if (currentSong.Value != null)
+                {
+                    _view.SongFrameManager.Hide();
+                    gameState = GameState.Loading;
+                    StartGame();
                 }
             }
         }
@@ -197,63 +237,87 @@ namespace InGame
             switch (difficulty)
             {
                 case SongDifficulty.Easy:
-                    if (currentSong.Value.Easy != null)
-                    {
-                        currentSong = currentSong.Value.Easy;
-                        break;
-                    }
                     try
                     {
-                        currentSong = songComponents[0].First;
+                        if (currentSong.Value.Easy != null)
+                        {
+                            currentSong = currentSong.Value.Easy;
+                            break;
+                        }
                     }
                     catch
                     {
-                        currentSong.Value = null;
+                        try
+                        {
+                            currentSong = songComponents[0].First;
+                        }
+                        catch
+                        {
+                            currentSong.Value = null;
+                        }
                     }
                     break;
                 case SongDifficulty.Normal:
-                    if (currentSong.Value.Normal != null)
-                    {
-                        currentSong = currentSong.Value.Normal;
-                        break;
-                    }
                     try
                     {
-                        currentSong = songComponents[1].First;
+                        if (currentSong.Value.Normal != null)
+                        {
+                            currentSong = currentSong.Value.Normal;
+                            break;
+                        }
                     }
                     catch
                     {
-                        currentSong.Value = null;
+                        try
+                        {
+                            currentSong = songComponents[1].First;
+                        }
+                        catch
+                        {
+                            currentSong.Value = null;
+                        }
                     }
                     break;
                 case SongDifficulty.Hard:
-                    if (currentSong.Value.Hard != null)
-                    {
-                        currentSong = currentSong.Value.Hard;
-                        break;
-                    }
                     try
                     {
-                        currentSong = songComponents[2].First;
+                        if (currentSong.Value.Hard != null)
+                        {
+                            currentSong = currentSong.Value.Hard;
+                            break;
+                        }
                     }
                     catch
                     {
-                        currentSong.Value = null;
+                        try
+                        {
+                            currentSong = songComponents[2].First;
+                        }
+                        catch
+                        {
+                            currentSong.Value = null;
+                        }
                     }
                     break;
                 case SongDifficulty.Expert:
-                    if (currentSong.Value.Expert != null)
-                    {
-                        currentSong = currentSong.Value.Expert;
-                        break;
-                    }
                     try
                     {
-                        currentSong = songComponents[3].First;
+                        if (currentSong.Value.Expert != null)
+                        {
+                            currentSong = currentSong.Value.Expert;
+                            break;
+                        }
                     }
                     catch
                     {
-                        currentSong.Value = null;
+                        try
+                        {
+                            currentSong = songComponents[3].First;
+                        }
+                        catch
+                        {
+                            currentSong.Value = null;
+                        }
                     }
                     break;
             }
@@ -270,6 +334,8 @@ namespace InGame
                     return SongDifficulty.Hard;
                 case SongDifficulty.Hard:
                     return SongDifficulty.Expert;
+                case SongDifficulty.Expert:
+                    return SongDifficulty.Easy;
                 default:
                     return SongDifficulty.Easy;
             }
@@ -285,23 +351,34 @@ namespace InGame
                     return SongDifficulty.Easy;
                 case SongDifficulty.Hard:
                     return SongDifficulty.Normal;
-                default:
+                case SongDifficulty.Expert:
                     return SongDifficulty.Hard;
+                default:
+                    return SongDifficulty.Easy;
             }
         }
 
         private void PlaySongManualUpdate()
         {
-            foreach (BaseNote note in _notes)
+
+            if (SoundManager.instance._audioSourceBGM.isPlaying)
             {
-                note.ManualUpdate(_noteSpeed * sofLan / 100);
+                foreach (BaseNote note in _notes)
+                {
+                    note.ManualUpdate(_noteSpeed * sofLan / 100);
+                }
+                TimeManager.instance.ManualUpdate();
+                inputProvider.ManualUpdate();
+                foreach (Lights.Light light in _view.Lights)
+                {
+                    light.ManualUpdate();
+                }
             }
-            TimeManager.instance.ManualUpdate();
-            inputProvider.ManualUpdate();
-            foreach (Lights.Light light in _view.Lights)
-            {
-                light.ManualUpdate();
-            }
+            if (SoundManager.instance._audioSourceBGM.isPlaying == false)
+                {
+                    gameState = GameState.Wait;
+                    SelectSongInitialize();
+                }
         }
 
 
@@ -352,9 +429,9 @@ namespace InGame
             }
         }
 
-        void Load()
+        void Load(string jsonData)
         {
-            _notesLoader.Initialize(songName);
+            _notesLoader.Initialize(jsonData);
             _notesManager.Initialize(_notesLoader.MaxBlock);
             Debug.Log($"NotesNum: {_notesLoader.NoteNum}");
         }
@@ -365,14 +442,16 @@ namespace InGame
         }
 
 
-        void Initialize()
+        async UniTaskVoid Initialize(CancellationToken ct)
         {
+            SoundManager.instance.PlayClip(currentSong.Value.audioClip);
+            await UniTask.Delay(450, cancellationToken: ct);
             VariableInitialize();
             foreach (var light in _lights)
             {
                 light.Initialize();
             }
-            Load();
+            Load(currentSong.Value.beatMapData);
             for (int i = 0; i < _defaultNoteNum; i++)
             {
                 Generate();
@@ -384,6 +463,9 @@ namespace InGame
             // }
             inputProvider.Initialize();
             InputBind();
+            //await UniTask.WaitUntil(() => SoundManager.instance.BGM_STATE == BGM_STATE.NOW_PLAY);
+            TimeManager.instance.ResetTime();
+            gameState = GameState.PlaySong;
         }
 
         void BindPush()
