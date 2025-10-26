@@ -19,21 +19,22 @@ namespace Lights
                 Debug.LogError("Renderer component not found on the Light object.");
             }
         }
+        
+        public void ManualUpdate()
+        {
+            LightController();
+        }
 
         // Update is called once per frame
-        public void LightController(bool Input)
+        private void LightController()
         {
             if (!(_rend.material.color.a <= 0))
             {
                 _rend.material.color = new Color(_rend.material.color.r, _rend.material.color.r, _rend.material.color.r, _alpha);
             }
-            if(Input)
-            {
-                ColorChange();
-            }
             _alpha -= FadeSpeed * Time.deltaTime;
         }
-        private void ColorChange()
+        public void ColorChange()
         {
             _alpha = 0.3f;
             _rend.material.color = new Color(_rend.material.color.r, _rend.material.color.g, _rend.material.color.b, _alpha);

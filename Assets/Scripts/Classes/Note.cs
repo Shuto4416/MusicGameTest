@@ -12,13 +12,13 @@ namespace Notes {
     {
         [SerializeField] private Renderer _renderer;
         public override event Action<int> OnSofLanEvent;
-        private bool isPushed = false;
+        public override event Action<NotesJudgeState> JudgeDisplayEvent;
         public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical)
         {
             base.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan, isCritical);
-            isPushed = false;
             Visible();
-            base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime < 0, OnSofLanEvent, noteSoftLanding);
+            base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime <= 0, OnSofLanEvent, noteSoftLanding);
+            base.AddTrigger(() => base.lifeSpan + 1f / 60f * 13.5f - TimeManager.instance.CurrentTime < 0 && !isPushed, () => Judge());
         }
         public override void ManualUpdate(float BPM)
         {
@@ -28,13 +28,6 @@ namespace Notes {
             {
                 base.Clear();
                 Debug.Log("Note cleared.");
-            }
-            if (base.lifeSpan + 1f / 60f * 13.5f - TimeManager.instance.CurrentTime < 0)
-            {
-                if (!isPushed)
-                {
-                    Invisible();
-                }
             }
         }
         public void Push()
@@ -51,6 +44,19 @@ namespace Notes {
         public void Visible()
         {
             _renderer.enabled = true;
+        }
+
+        public void JudgeDisplay(NotesJudgeState state)
+        {
+            JudgeDisplayEvent?.Invoke(state);
+        }
+
+        private void Judge()
+        {
+            Debug.Log("Miss!!");
+            Invisible();
+            isPushed = true;
+            JudgeDisplay(NotesJudgeState.Miss);
         }
 
     }

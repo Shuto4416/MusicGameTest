@@ -12,14 +12,17 @@ namespace Notes
         protected int laneNum;
         protected int noteType;
         protected int noteSoftLanding;
-        protected float lifeSpan;
+        protected float lifeSpan = 1000000f;
         protected int isCritical;
+        protected bool isPushed = false;
 
         public int LaneNum => laneNum;
         public int NoteType => noteType;
         public int NoteSoftLanding => noteSoftLanding;
         public float LifeSpan => lifeSpan;
         public int IsCritical => isCritical;
+
+        public bool IsPushed => isPushed;
 
 
         public virtual void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical)
@@ -29,6 +32,7 @@ namespace Notes
             this.noteSoftLanding = noteSoftLanding;
             this.lifeSpan = lifeSpan;
             this.isCritical = isCritical;
+            isPushed = false;
             triggers.Clear();
         }
         protected virtual void Move(float BPM)
@@ -37,6 +41,7 @@ namespace Notes
         }
         public event Action OnClearEvent;
         public virtual event Action<int> OnSofLanEvent;
+        public virtual event Action<NotesJudgeState> JudgeDisplayEvent;
         
         protected virtual void Clear()
         {

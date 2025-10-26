@@ -1,6 +1,8 @@
 using UnityEngine;
 using Zenject;
 using InputSystem;
+using Interface.FileLoader;
+using Classes.FileLoader;
 
 namespace ZenjectSample
 {
@@ -11,6 +13,10 @@ namespace ZenjectSample
             Container
                 .Bind<IInputProvider>()
                 .To<InputProvider>()
+                .AsCached();
+            Container
+                .Bind<IFileLoader>()
+                .To<FileLoader>()
                 .AsCached();
         }
     }
