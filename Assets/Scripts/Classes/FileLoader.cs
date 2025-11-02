@@ -149,19 +149,38 @@ namespace Classes.FileLoader
                     Debug.LogError($"FailedAddList: {e}");
                 }
             }
-            LinkedListNode<SongComponent> linkedListNode = songComponents[num].First;
-            while (songComponent.difficultyNum < linkedListNode.Value.difficultyNum)
+            LinkedListNode<SongComponent> linkedListNode = null;
+            try
             {
-                try
+                linkedListNode = songComponents[num].First;
+            }
+            catch (Exception e)
+            {
+                songComponents[num].AddFirst(songComponent);
+                Debug.LogError($"FailedLinkedListNode = songComponents[num].First : {e}");
+                return songComponents[num].First;
+            }
+            try
+            {
+                while (songComponent.difficultyNum < linkedListNode.Value.difficultyNum)
                 {
-                    linkedListNode = linkedListNode.Next;
+                    try
+                    {
+                        linkedListNode = linkedListNode.Next;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"AddBeatMap: Error :{e}");
+                        songComponents[num].AddLast(songComponent);
+                        return songComponents[num].Last;
+                    }
                 }
-                catch (Exception e)
-                {
-                    Debug.LogError($"AddBeatMap: Error :{e}");
-                    songComponents[num].AddLast(songComponent);
-                    return songComponents[num].Last;
-                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"AddBeatMapWhile: Error :{e}");
+                songComponents[num].AddFirst(songComponent);
+                return songComponents[num].First;
             }
             songComponents[num].AddBefore(linkedListNode, songComponent);
             return linkedListNode.Previous;

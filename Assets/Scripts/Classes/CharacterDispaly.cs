@@ -25,6 +25,8 @@ public class CharacterDispaly : MonoBehaviour
     [SerializeField]
     private NotesJudgementDisplay Miss;
 
+
+
     private Sequence ExecutionSequence;
 
     public void NotesJudgePlay(NotesJudgeState state)

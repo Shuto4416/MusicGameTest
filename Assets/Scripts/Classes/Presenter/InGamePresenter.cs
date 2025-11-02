@@ -16,6 +16,7 @@ using R3.Triggers;
 using Audio;
 using UnityEngine.Rendering;
 using System.Threading;
+using Classes.NotesManager;
 
 
 public enum GameState
@@ -34,11 +35,17 @@ namespace InGame
         [SerializeField] private InGameModel _model;
         [SerializeField] private InGameView _view;
         private Lights.Light[] _lights => _view.Lights;
-        [SerializeField] private NotesManager _notesManager;
+        [SerializeField]
+        private NotesManager _notesManager;
         private NotesLoader _notesLoader => _model.NotesLoader;
-        [SerializeField] private int _maxNoteNum = 100; // 最大ノーツ数
-        [SerializeField] private int _defaultNoteNum = 60; // 初期ノーツ数
-        [SerializeField] private float _noteSpeed;
+        [SerializeField]
+        private int _maxNoteNum = 100; // 最大ノーツ数
+        [SerializeField]
+        private int _defaultNoteNum = 60; // 初期ノーツ数
+        [SerializeField]
+        private ComboDisplayPresenter _comboDisplayPresenter;
+        [SerializeField]
+        private NoteSpeedDisplayPresenter _noteSpeedDisplayPresenter;
         private IInputProvider inputProvider;
         private ISelectInputProvider selectInputProvider;
         private List<BaseNote> _notes = new List<BaseNote>();
@@ -49,6 +56,13 @@ namespace InGame
         private LinkedListNode<SongComponent> currentSong;
         private SongDifficulty currentSongDifficulty;
         private GameState gameState = GameState.Wait;
+        private double startTime;
+        private int _perfectNum;
+        private int _greatNum;
+        private int _badNum;
+        private int _missNum;
+        private int[] _notesSpeeds = { 400, 600, 800, 1000};
+        private int _speedSelector = 0;
 
         [Inject]
         void Injection(IInputProvider inputProvider)
@@ -62,6 +76,8 @@ namespace InGame
         }
         void Start()
         {
+            _noteSpeedDisplayPresenter.Initialize();
+            _noteSpeedDisplayPresenter.Model.Set(_notesSpeeds[_speedSelector]);
             songComponents = _model.FileLoader.GenerateSongComponents();
             try
             {
@@ -86,9 +102,16 @@ namespace InGame
             gameState = GameState.SelectSong;
         }
 
+        async UniTask ResultInitialize(CancellationToken token)
+        {
+            _view.result.Initialize();
+            await _view.result.Show(_perfectNum, _greatNum, _badNum, _missNum, _notesLoader.NotesDatas.Count, token);
+            gameState = GameState.Result;
+        }
+
         void StartGame()
         {
-            Initialize(destroyCancellationToken).Forget();
+            MusicGameInitialize();
         }
 
         SongComponent isCurrentSongNull(LinkedListNode<SongComponent> linkedListNode)
@@ -110,6 +133,10 @@ namespace InGame
         {
             sofLan = 100;
             CurrentNoteNum = 0;
+            _perfectNum = 0;
+            _greatNum = 0;
+            _badNum = 0;
+            _missNum = 0;
         }
 
         // Update is called once per frame
@@ -125,8 +152,21 @@ namespace InGame
                 case GameState.PlaySong:
                     PlaySongManualUpdate();
                     break;
+                case GameState.Result:
+                    ResultManualUpdate();
+                    break;
             }
-            
+
+        }
+        private void ResultManualUpdate()
+        {
+            var sIP = selectInputProvider;
+            if (sIP.Up() || sIP.Down() || sIP.Right() || sIP.Left() || sIP.DifficultyUp() || sIP.DifficultyDown())
+            {
+                _view.result.Initialize();
+                gameState = GameState.Wait;
+                SelectSongInitialize();
+            }
         }
 
         private void SelectSongManualUpdate()
@@ -136,6 +176,33 @@ namespace InGame
             NextSong();
             PrevSong();
             EnterSong();
+            SpeedUp();
+            SpeedDown();
+        }
+
+        private int RotSelector(int i)
+        {
+            if (i < 0) return 3;
+            if (i > 3) return 0;
+            return i;
+        }
+
+        private void SpeedUp()
+        {
+            if (selectInputProvider.Up())
+            {
+                _speedSelector = RotSelector(++_speedSelector);
+                _noteSpeedDisplayPresenter.Model.Set(_notesSpeeds[_speedSelector]);
+            }
+        }
+
+        private void SpeedDown()
+        {
+            if (selectInputProvider.Down())
+            {
+                _speedSelector = RotSelector(--_speedSelector);
+                _noteSpeedDisplayPresenter.Model.Set(_notesSpeeds[_speedSelector]);
+            }
         }
 
         private void DifficultyUp()
@@ -147,7 +214,7 @@ namespace InGame
                 _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
             }
         }
-        
+
         private void DifficultyDown()
         {
             if (selectInputProvider.DifficultyDown())
@@ -210,6 +277,7 @@ namespace InGame
             {
                 if (currentSong.Value != null)
                 {
+                    SoundManager.instance.PlaySE(SEFile.MoveScene);
                     _view.SongFrameManager.Hide();
                     gameState = GameState.Loading;
                     StartGame();
@@ -363,22 +431,28 @@ namespace InGame
 
             if (SoundManager.instance._audioSourceBGM.isPlaying)
             {
-                foreach (BaseNote note in _notes)
+                TimeManager.instance.SetTime((float)(AudioSettings.dspTime - startTime));
+                var time = TimeManager.instance.CurrentTime;
+                if (TimeManager.instance.CurrentTime > 0)
                 {
-                    note.ManualUpdate(_noteSpeed * sofLan / 100);
-                }
-                TimeManager.instance.ManualUpdate();
-                inputProvider.ManualUpdate();
-                foreach (Lights.Light light in _view.Lights)
-                {
-                    light.ManualUpdate();
+                    // Debug.Log($"Time: {TimeManager.instance.CurrentTime}");
+                    foreach (BaseNote note in _notes)
+                    {
+                        note.ManualUpdate((_noteSpeedDisplayPresenter.Model.NoteSpeed / 60f) * (sofLan / 100f) * time/*TimeManager.instance.CurrentTime*/);
+                    }
+                    // TimeManager.instance.ManualUpdate();
+                    inputProvider.ManualUpdate();
+                    foreach (Lights.Light light in _view.Lights)
+                    {
+                        light.ManualUpdate();
+                    }
                 }
             }
-            if (SoundManager.instance._audioSourceBGM.isPlaying == false)
-                {
-                    gameState = GameState.Wait;
-                    SelectSongInitialize();
-                }
+            if (SoundManager.instance.BGM_STATE == BGM_STATE.END)
+            {
+                gameState = GameState.Wait;
+                ResultInitialize(default).Forget();
+            }
         }
 
 
@@ -411,6 +485,25 @@ namespace InGame
             note.JudgeDisplayEvent += (_) =>
             {
                 _view.CharacterDispaly.NotesJudgePlay(_);
+                switch (_)
+                {
+                    case NotesJudgeState.Perfect:
+                        _comboDisplayPresenter.Model.Set(_comboDisplayPresenter.Model.Combo + 1);
+                        _perfectNum++;
+                        break;
+                    case NotesJudgeState.Great:
+                        _comboDisplayPresenter.Model.Set(_comboDisplayPresenter.Model.Combo + 1);
+                        _greatNum++;
+                        break;
+                    case NotesJudgeState.Bad:
+                        _comboDisplayPresenter.Model.Set(0);
+                        _badNum++;
+                        break;
+                    case NotesJudgeState.Miss:
+                        _comboDisplayPresenter.Model.Set(0);
+                        _missNum++;
+                        break;
+                }
             };
         }
 
@@ -420,9 +513,9 @@ namespace InGame
 
         void Generate()
         {
-            if (CurrentNoteNum < _notesLoader.NoteNum)
+            if (CurrentNoteNum < _notesLoader.NotesDatas.Count)
             {
-                _notesManager.Generate(CurrentNoteNum, _noteSpeed, _notesLoader.NotesDatas);
+                _notesManager.Generate(CurrentNoteNum, _noteSpeedDisplayPresenter.Model.NoteSpeed, _notesLoader.NotesDatas);
                 if (_notesLoader.NotesDatas[CurrentNoteNum].noteType == 2) CurrentNoteNum++;
                 CurrentNoteNum++;
                 Debug.Log($"Note created: {CurrentNoteNum}");
@@ -442,10 +535,15 @@ namespace InGame
         }
 
 
-        async UniTaskVoid Initialize(CancellationToken ct)
+        void MusicGameInitialize()
         {
-            SoundManager.instance.PlayClip(currentSong.Value.audioClip);
-            await UniTask.Delay(450, cancellationToken: ct);
+            _comboDisplayPresenter.Initialize();
+            TimeManager.instance.ResetTime();
+            startTime = AudioSettings.dspTime + 1.0f;
+            SoundManager.instance.PlayClipScheduled(currentSong.Value.audioClip, startTime);
+            TimeManager.instance.SetTime((float)(AudioSettings.dspTime - startTime));
+            // SoundManager.instance.PlayClip(currentSong.Value.audioClip);
+            // await UniTask.Delay(450, cancellationToken: ct);
             VariableInitialize();
             foreach (var light in _lights)
             {
@@ -456,15 +554,14 @@ namespace InGame
             {
                 Generate();
             }
+            inputProvider.Initialize();
             // Debug.Log($"NoteNum: {_notesManager.noteNum} , NoteData: {_notesManager.LaneNum[0]} , {_notesManager.NotesTime[0] }, {_notesManager.NoteSoftLanding[0] }");
             // for (int i = 0; i < _notesManager.noteNum; i++)
             // {
             //     _notesData.Add((_notesManager.LaneNum[i], _notesManager.NotesTime[i], _notesManager.NoteSoftLanding[i]));
             // }
-            inputProvider.Initialize();
             InputBind();
             //await UniTask.WaitUntil(() => SoundManager.instance.BGM_STATE == BGM_STATE.NOW_PLAY);
-            TimeManager.instance.ResetTime();
             gameState = GameState.PlaySong;
         }
 
@@ -498,25 +595,38 @@ namespace InGame
 
         int NearestNoteNum(int laneNum, bool isExcludePushedNote)
         {
-
+            // var currentTime = TimeManager.instance.CurrentTime;
             float NearestTime = float.MaxValue;
             int NearestTimeNoteNum = -1;
             int num;
-            int MaxNum = CurrentNoteNum + 1;
-            if (CurrentNoteNum - _defaultNoteNum < 0) num = 0;
-            else if (CurrentNoteNum >= _notesLoader.NotesDatas.Count) num = MaxNum = _notesLoader.NotesDatas.Count;
-            else num = CurrentNoteNum - _defaultNoteNum;
-            for (int i = num; i <= MaxNum; i++)
+            int MaxNum = CurrentNoteNum;
+            int processNum = 60;
+            num = CurrentNoteNum - processNum;
+            if (num < 0)
+            {
+                num = 0;
+            }
+            if (CurrentNoteNum >= _notesLoader.NotesDatas.Count)
+            {
+                num = _notesLoader.NotesDatas.Count - processNum;
+                MaxNum = _notesLoader.NotesDatas.Count;
+            }
+            for (int i = num; i < MaxNum; i++)
             {
                 try
                 {
-                    if (_notesLoader.NotesDatas[i].laneNum != laneNum) continue;
-                    float time = _notesLoader.NotesDatas[i].noteAbsTime - TimeManager.instance.CurrentTime;
-                    if (SearchNote(i, laneNum).IsPushed && isExcludePushedNote) continue;
-                    if (Math.Abs(time) < NearestTime)
+                    // Debug.Log($"Note: {i}");
+                    if (_notesLoader.NotesDatas[i].laneNum == laneNum)
                     {
-                        NearestTime = time;
-                        NearestTimeNoteNum = i;
+                        Debug.Log($"Note: {i} _notesLoader.NotesDatas[i].laneNum == laneNum");
+                        float time = _notesLoader.NotesDatas[i].noteAbsTime - TimeManager.instance.CurrentTime;
+                        if (SearchNote(i, laneNum).IsPushed && isExcludePushedNote) continue;
+                        // Debug.Log($"Note: {i}, Time: {time}");
+                        if (Math.Abs(time) < NearestTime)
+                        {
+                            NearestTime = time;
+                            NearestTimeNoteNum = i;
+                        }
                     }
                 }
                 catch (Exception e)
@@ -525,69 +635,137 @@ namespace InGame
                     continue;
                 }
             }
+            Debug.Log($"ThisNoteNum = {NearestTimeNoteNum}");
             return NearestTimeNoteNum;
+        }
+
+        void NearestNoteNumJudge(int laneNum, bool isExcludePushedNote)
+        {
+            // var currentTime = TimeManager.instance.CurrentTime;
+            int NearestTimeNoteNum = -1;
+            int num;
+            int MaxNum = CurrentNoteNum;
+            int processNum = 80;
+            num = CurrentNoteNum - processNum;
+            if (num < 0)
+            {
+                num = 0;
+            }
+            if (CurrentNoteNum >= _notesLoader.NotesDatas.Count)
+            {
+                num = _notesLoader.NotesDatas.Count - processNum;
+                MaxNum = _notesLoader.NotesDatas.Count;
+            }
+            for (int i = num; i < MaxNum; i++)
+            {
+                try
+                {
+                    // Debug.Log($"Note: {i}");
+                    if (_notesLoader.NotesDatas[i].laneNum == laneNum)
+                    {
+                        Debug.Log($"Note: {i} _notesLoader.NotesDatas[i].laneNum == laneNum");
+                        float time = _notesLoader.NotesDatas[i].noteAbsTime - TimeManager.instance.CurrentTime;
+                        if (SearchNote(i, laneNum).IsPushed && isExcludePushedNote) continue;
+                        if (NoteJudgeProcess(i)) return;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error accessing note data at index {i}: {e.Message}");
+                    continue;
+                }
+            }
+            Debug.Log($"ThisNoteNum = {NearestTimeNoteNum}");
+            return;
         }
 
         BaseNote SearchNote(int noteNum, int laneNum)
         {
+            BaseNote note = null;
+            float NearestTime = float.MaxValue;
             foreach (var _note in _notesManager.UsingNotesObjDatas[laneNum])
+            {
+                float time = Math.Abs(_note.LifeSpan - _notesLoader.NotesDatas[noteNum].noteAbsTime);
                 if (_note.LifeSpan == _notesLoader.NotesDatas[noteNum].noteAbsTime)
                     return _note;
-            return null;
+                if (time < NearestTime)
+                {
+                    note = _note;
+                }
+            }
+            return note;
         }
 
         void NoteJudge(int laneNum)
         {
-            float NearestTime;
-            int NearestTimeNoteNum = NearestNoteNum(laneNum, true);
-            if (NearestTimeNoteNum == -1) return;
+            NearestNoteNumJudge(laneNum, true);
+            // int NearestTimeNoteNum = NearestNoteNum(laneNum, true);
+            // if (NearestTimeNoteNum == -1) return;
+            // NoteJudgeProcess(NearestTimeNoteNum);
+
+        }
+
+        bool NoteJudgeProcess(int i)
+        {
+            var laneNum = _notesLoader.NotesDatas[i].laneNum;
             Notes.Note note;
             Notes.LongNote longNote;
-            NearestTime = Math.Abs(_notesLoader.NotesDatas[NearestTimeNoteNum].noteAbsTime - TimeManager.instance.CurrentTime);
+            var NearestTime = Math.Abs(_notesLoader.NotesDatas[i].noteAbsTime - TimeManager.instance.CurrentTime);
             // 普通のノーツの時
-            if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 1)
+            if (_notesLoader.NotesDatas[i].noteType == 1)
             {
-                note = SearchNote(NearestTimeNoteNum, laneNum)?.GetComponent<Notes.Note>();
-                if (note == null) return;
+                note = SearchNote(i, laneNum)?.GetComponent<Notes.Note>();
+                if (note == null) return false;
                 if (NearestTime < 1f / 60f * 4.5f)
                 {
+                    // SoundManager.instance.PlaySE(SEFile.Tap);
                     note.JudgeDisplay(NotesJudgeState.Perfect);
                     note.Push();
+                    return true;
                 }
                 else if (NearestTime < 1f / 60f * 8.5f)
                 {
+                    // SoundManager.instance.PlaySE(SEFile.Tap);
                     note.JudgeDisplay(NotesJudgeState.Great);
                     note.Push();
+                    return true;
                 }
                 else if (NearestTime < 1f / 60f * 13.5f)
                 {
+                    // SoundManager.instance.PlaySE(SEFile.Tap);
                     note.JudgeDisplay(NotesJudgeState.Bad);
                     note.Push();
+                    return true;
                 }
+                return false;
             }
             // ロングノーツの時
-            else if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType == 2)
+            else if (_notesLoader.NotesDatas[i].noteType == 2)
             {
-                longNote = SearchNote(NearestTimeNoteNum, laneNum)?.GetComponent<LongNote>();
-                if (longNote == null) return;
-                if (longNote.IsPushed) return;
+                longNote = SearchNote(i, laneNum)?.GetComponent<LongNote>();
+                if (longNote == null) return false;
+                if (longNote.IsPushed) return false;
                 if (NearestTime < 1f / 60f * 4.5f)
                 {
                     longNote.JudgeDisplay(NotesJudgeState.Perfect);
                     longNote.Push();
+                    return true;
                 }
                 else if (NearestTime < 1f / 60f * 8.5f)
                 {
                     longNote.JudgeDisplay(NotesJudgeState.Great);
                     longNote.Push();
+                    return true;
                 }
                 else if (NearestTime < 1f / 60f * 13.5f)
                 {
                     longNote.JudgeDisplay(NotesJudgeState.Bad);
                     longNote.BadPush();
+                    return true;
                 }
+                return false;
             }
-
+            return false;
         }
 
         void LongNoteJudge(int laneNum)
@@ -600,6 +778,8 @@ namespace InGame
             if (longNote == null) return;
             if (longNote.IsPushed) longNote.Press();
         }
+        
+        
 
     }
 }

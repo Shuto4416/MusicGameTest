@@ -13,27 +13,31 @@ namespace Notes {
         [SerializeField] private Renderer _renderer;
         public override event Action<int> OnSofLanEvent;
         public override event Action<NotesJudgeState> JudgeDisplayEvent;
-        public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical)
+        public override void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical, Vector3 initialPosition/*, float spawnAbsTime, float targetAbsTime*/)
         {
-            base.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan, isCritical);
+            var time = TimeManager.instance.CurrentTime;
+            base.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan, isCritical, initialPosition/*, spawnAbsTime, targetAbsTime*/);
             Visible();
-            base.AddTrigger(() => lifeSpan - TimeManager.instance.CurrentTime <= 0, OnSofLanEvent, noteSoftLanding);
+            base.AddTrigger(() => lifeSpan - time <= 0, OnSofLanEvent, noteSoftLanding);
             base.AddTrigger(() => base.lifeSpan + 1f / 60f * 13.5f - TimeManager.instance.CurrentTime < 0 && !isPushed, () => Judge());
+            base.AddTrigger(() => base.lifeSpan + 1f / 60f * 14f - TimeManager.instance.CurrentTime < 0, () => base.Clear());
+            // base.AddTrigger(() => TimeManager.instance.CurrentTime > lifeSpan + 0.5f, () => base.Clear());
         }
         public override void ManualUpdate(float BPM)
         {
             base.ManualUpdate(BPM);
             // 画面外に出たらクリアイベントを発火
-            if (transform.position.y < -5f) // 画面外のY座標を適宜調整
-            {
-                base.Clear();
-                Debug.Log("Note cleared.");
-            }
+            // if (transform.position.y < -5f) // 画面外のY座標を適宜調整
+            // {
+            //     base.Clear();
+            //     Debug.Log("Note cleared.");
+            // }
         }
         public void Push()
         {
             isPushed = true;
             Invisible();
+            // base.Clear();
         }
 
         public void Invisible()
@@ -53,7 +57,8 @@ namespace Notes {
 
         private void Judge()
         {
-            Debug.Log($"{TimeManager.instance.CurrentTime} : Miss!!");
+            var time = TimeManager.instance.CurrentTime;
+            Debug.Log($"{time} : Miss!!");
             Invisible();
             isPushed = true;
             JudgeDisplay(NotesJudgeState.Miss);

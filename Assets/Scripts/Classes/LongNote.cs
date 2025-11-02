@@ -20,39 +20,42 @@ namespace Notes {
         public override event Action<int> OnSofLanEvent;
         public override event Action<NotesJudgeState> JudgeDisplayEvent;
 
-        public void Initialize(int laneNum, int noteType, int firstNoteSoftLanding, float firstLifeSpan, int secondNoteSoftLanding, float secondLifeSpan, int isCritical, Vector3 endPoint)
+        public void Initialize(int laneNum, int noteType, int firstNoteSoftLanding, float firstLifeSpan, Vector3 initialPosition, int secondNoteSoftLanding, float secondLifeSpan, int isCritical, Vector3 endPoint/*, float spawnAbsTime, float targetAbsTime*/)
         {
+            var time = TimeManager.instance.CurrentTime;
             _secondLifeSpan = secondLifeSpan;
-            base.Initialize(laneNum, noteType, firstNoteSoftLanding, firstLifeSpan, isCritical);
+            base.Initialize(laneNum, noteType, firstNoteSoftLanding, firstLifeSpan, isCritical, initialPosition/*, spawnAbsTime, targetAbsTime*/);
             isBad = false;
             isJudged = false;
             LineRendererEndPoint = endPoint;
             Debug.Log($"firstLifeSpan: {firstLifeSpan}, secondLifeSpan: {_secondLifeSpan}");
             Visible();
-            base.AddTrigger<int>(() => firstLifeSpan - TimeManager.instance.CurrentTime <= 0, OnSofLanEvent, firstNoteSoftLanding);
-            base.AddTrigger<int>(() => _secondLifeSpan - TimeManager.instance.CurrentTime <= 0, OnSofLanEvent, secondNoteSoftLanding);
-            base.AddTrigger(() => _secondLifeSpan - TimeManager.instance.CurrentTime <= 0 && !isJudged, () => Judge());
+            base.AddTrigger<int>(() => firstLifeSpan - time <= 0, OnSofLanEvent, firstNoteSoftLanding);
+            base.AddTrigger<int>(() => _secondLifeSpan - time <= 0, OnSofLanEvent, secondNoteSoftLanding);
+            base.AddTrigger(() => _secondLifeSpan - time <= 0 && !isJudged, () => Judge());
+            base.AddTrigger(() => SecondLifeSpan + 1f / 60f * 14f - TimeManager.instance.CurrentTime < 0, () => base.Clear());
         }
 
 
         public override void ManualUpdate(float BPM)
         {
+            var time = TimeManager.instance.CurrentTime;
             if (!isJudged)
             {
-                if (base.lifeSpan + 1f / 60f * 13.5f - TimeManager.instance.CurrentTime < 0 && !isPushed && _renderer.enabled)
+                if (base.lifeSpan + 1f/60f * 13.5f - time < 0f && !isPushed && _renderer.enabled)
                 {
                     JudgeDisplay(NotesJudgeState.Miss);
                     Debug.Log("Miss2");
                     isJudged = true;
                     Invisible();
                 }
-                if (isPushed && _secondLifeSpan - TimeManager.instance.CurrentTime > 0 && !isBad)
+                if (isPushed && _secondLifeSpan - time > 0 && !isBad)
                 {
                     if (pushFrameCount > 0)
                     {
                         pushFrameCount--;
                     }
-                    else if (_renderer.enabled)
+                    else if (_renderer.enabled && pushFrameCount < 0)
                     {
                         JudgeDisplayEvent?.Invoke(NotesJudgeState.Miss);
                         isJudged = true;
@@ -69,17 +72,19 @@ namespace Notes {
             }
             base.ManualUpdate(BPM);
             // 画面外に出たらクリアイベントを発火
-            if (transform.position.y + LineRendererEndPoint.y < -5f) // 画面外のY座標を適宜調整
-            {
-                base.Clear();
-                Debug.Log("Note cleared.");
-            }
+            // if (/**/transform.position.y < -5f) // 画面外のY座標を適宜調整
+            // {
+            //     base.Clear();
+            //     Debug.Log("Note cleared.");
+            // }
+
         }
 
         public void Invisible()
         {
             _renderer.enabled = false;
             lineRenderer.SetPosition(1, new Vector3(0, 0, 0));
+            // base.Clear();
         }
 
         public void Visible()
@@ -97,7 +102,7 @@ namespace Notes {
         {
             Debug.Log("Pushed");
             isPushed = true;
-            pushFrameCount = 5;
+            pushFrameCount = 10;
         }
         public void BadPush()
         {

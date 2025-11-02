@@ -53,7 +53,7 @@ public class NotesLoader : MonoBehaviour
     private int maxBlock;
     //曲名
     private string songName;
-    private List<NotesData> notesDatas = new List<NotesData>();
+    private List<NotesData> notesDatas;
     public int NoteNum => noteNum;
     public int MaxBlock => maxBlock;
     public List<NotesData> NotesDatas => notesDatas;
@@ -63,7 +63,7 @@ public class NotesLoader : MonoBehaviour
         //総ノーツを0にする
         noteNum = 0;
         //読み込む譜面のファイル名を入力
-
+        notesDatas = new List<NotesData>();
         Load(jsonData);
         // SoundManager.instance.PlayBGM(BGMFile.GameScene);
     }
@@ -82,7 +82,12 @@ public class NotesLoader : MonoBehaviour
         CreateNotesList(inputJson, inputJson.notes);
         for (int i = 0; i < notesDatas.Count; i++)
         {
-            notesDatas[i].noteRelTime = i != 0 ? notesDatas[i].noteAbsTime - notesDatas[i - 1].noteAbsTime : notesDatas[i].noteAbsTime;
+            var num = i - 1;
+            if (i != 0)
+            {
+                if (notesDatas[i].noteAbsTime < notesDatas[i - 1].noteAbsTime) num = i - 2;
+            }
+            notesDatas[i].noteRelTime = i != 0 ? notesDatas[i].noteAbsTime - notesDatas[num].noteAbsTime : notesDatas[i].noteAbsTime;
         }
         for (int i = 0; i < notesDatas.Count; i++) Debug.Log($" type: {notesDatas[i].noteType}, lanenum: {notesDatas[i].laneNum}, AbsTime: {notesDatas[i].noteAbsTime}, RelTime: {notesDatas[i].noteRelTime}, softLanding: {notesDatas[i].noteSoftLanding}, isCritical: {notesDatas[i].isCritical}");
     }
@@ -92,7 +97,7 @@ public class NotesLoader : MonoBehaviour
         for (int i = 0; i < notes.Length; i++)
         {
             //時間を計算
-            float absTime = (60 / (inputJson.BPM * (float)notes[i].LPB) * notes[i].num)/* + inputJson.offset * 0.01f*/;
+            float absTime = (60 / (inputJson.BPM * (float)notes[i].LPB) * notes[i].num) /*+ ((60f / inputJson.BPM * 4f) *(inputJson.offset / 2400))*/ + inputJson.offset/50000;
             //リストに追加
             notesDatas.Add(new NotesData(notes[i].block, notes[i].type, notes[i].softLanding, notes[i].isCritical , absTime, 0));
             if (notes[i].notes != null) CreateNotesList(inputJson, notes[i].notes);

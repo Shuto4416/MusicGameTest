@@ -8,37 +8,37 @@ namespace InputSystem
     {
         public bool DifficultyUp()
         {
-            return Input.GetKeyDown(KeyCode.E);
+            return Input.GetKeyDown(KeyCode.S);
         }
 
         public bool DifficultyDown()
         {
-            return Input.GetKeyDown(KeyCode.Q);
+            return Input.GetKeyDown(KeyCode.A);
         }
 
         public bool Up()
         {
-            return Input.GetKeyDown(KeyCode.W);
+            return Input.GetKeyDown(KeyCode.D);
         }
 
         public bool Down()
         {
-            return Input.GetKeyDown(KeyCode.S);
+            return Input.GetKeyDown(KeyCode.W);
         }
 
         public bool Right()
         {
-            return Input.GetKeyDown(KeyCode.D);
+            return Input.GetKeyDown(KeyCode.L);
         }
 
         public bool Left()
         {
-            return Input.GetKeyDown(KeyCode.A);
+            return Input.GetKeyDown(KeyCode.K);
         }
 
         public bool Enter()
         {
-            return Input.GetKeyDown(KeyCode.Return);
+            return Input.GetKeyDown(KeyCode.Semicolon);
         }
 
         public void ManualUpdate()

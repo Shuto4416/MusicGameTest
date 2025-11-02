@@ -15,6 +15,11 @@ public class TimeManager : Singleton<TimeManager>
         AddTime(Time.deltaTime);
     }
 
+    public void SetTime(float time)
+    {
+        currentTime = time;
+    }
+
     public void AddTime(float time)
     {
         currentTime += time;
