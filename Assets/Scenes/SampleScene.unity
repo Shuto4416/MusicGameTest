@@ -7454,8 +7454,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u30CE\u30FC\u30C4\u901F\u5EA6:\u9045\u3044"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 093d54bd6aefdcf44aba245695cfcad3, type: 2}
-  m_sharedMaterial: {fileID: 1725415451596390181, guid: 093d54bd6aefdcf44aba245695cfcad3, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 9b31b630b627acd48b855beeb9a0e552, type: 2}
+  m_sharedMaterial: {fileID: -90481439998702160, guid: 9b31b630b627acd48b855beeb9a0e552, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
