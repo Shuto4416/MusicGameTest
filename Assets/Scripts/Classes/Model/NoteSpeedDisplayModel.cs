@@ -7,9 +7,9 @@ public class NoteSpeedDisplayModel
 {
     public ReactiveProperty<int> _notesSpeed;
     public int NoteSpeed => _notesSpeed.Value;
-    public NoteSpeedDisplayModel(int initCombo)
+    public NoteSpeedDisplayModel(int initSpeed)
     {
-        _notesSpeed = new ReactiveProperty<int>(initCombo);
+        _notesSpeed = new ReactiveProperty<int>(initSpeed);
     }
 
     public void Set(int num)
