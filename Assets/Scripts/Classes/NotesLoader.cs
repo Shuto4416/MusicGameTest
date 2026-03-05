@@ -21,8 +21,8 @@ public class Note
     public int num;         // 何拍目に配置されるか
     public int block;       // どのレーンに配置されるか
     public int LPB;         // 1拍あたりの分割数
-    public int softLanding; //　ノーツの速度倍率(100=通常速度, 200=2倍速など)
-    public int isCritical;
+    public int softLanding = 100; //　ノーツの速度倍率(100=通常速度, 200=2倍速など)
+    public int isCritical = 0;
     public Note[] notes;
 }
 
