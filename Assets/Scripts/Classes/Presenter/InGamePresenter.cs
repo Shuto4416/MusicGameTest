@@ -474,7 +474,7 @@ namespace InGame
             {
                 int laneNum = note.LaneNum;
                 Debug.Log($"{note.LaneNum}");
-                _notesManager.Pop(note.LaneNum, note.NoteType);
+                _notesManager.Pop(note);
                 Generate();
                 Debug.Log("Note cleared and created new note.");
             };

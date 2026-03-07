@@ -169,12 +169,14 @@ namespace Classes.NotesManager
             return objsNote;
         }
 
-        public void Pop(int laneNum, int noteType)
+        public void Pop(BaseNote target)
         {
+            int laneNum = target.LaneNum;
+            int noteType = target.NoteType;
             if (UsingNotesObj[laneNum].Count > 0)
             {
                 BaseNote note = UsingNotesObj[laneNum].First.Value;
-                UsingNotesObj[laneNum].RemoveFirst();
+                UsingNotesObj[laneNum].Remove(target);
                 if (noteType == 1) UnUseNotesObj.AddLast(note);
                 if (noteType == 2) UnUseLongNotesObj.AddLast(note as LongNote);
                 note.gameObject.transform.position = new Vector3(0, 100, 0); // 画面外に移動
