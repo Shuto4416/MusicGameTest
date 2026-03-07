@@ -2346,9 +2346,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 519311910}
-  - component: {fileID: 519311911}
   - component: {fileID: 519311913}
   - component: {fileID: 519311912}
+  - component: {fileID: 519311914}
   m_Layer: 5
   m_Name: Combo
   m_TagString: Untagged
@@ -2377,18 +2377,6 @@ RectTransform:
   m_AnchoredPosition: {x: 600, y: -100}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &519311911
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519311909}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce2c28f3dfaed3b42bfbbca7f6cd94d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &519311912
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2402,7 +2390,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _comboText: {fileID: 921770537}
-  Combo: {fileID: 519311911}
+  Combo: {fileID: 519311914}
 --- !u!114 &519311913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2416,6 +2404,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _view: {fileID: 519311912}
+--- !u!114 &519311914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519311909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce2c28f3dfaed3b42bfbbca7f6cd94d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0

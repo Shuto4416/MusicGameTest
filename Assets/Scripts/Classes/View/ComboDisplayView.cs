@@ -11,20 +11,24 @@ public class ComboDisplayView : MonoBehaviour
     private TextMeshProUGUI _comboText;
     [SerializeField]
     private NotesJudgementDisplay Combo;
+    private Sequence _comboSequence;
     public void Initialize()
     {
         _comboText.text = "";
     }
     public void ShowCombo(int combo)
     {
+        
         _comboText.text = combo.ToString();
         if (combo > 1)
         {
-            Combo.Display().Play();
+            _comboSequence?.Complete();
+            _comboSequence = Combo.Display();
+            _comboSequence?.Play();
         }
         else
         {
-            Combo.Display().Complete();
+            _comboSequence?.Complete();
         }
     }
 }

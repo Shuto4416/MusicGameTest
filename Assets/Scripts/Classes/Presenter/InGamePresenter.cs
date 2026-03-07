@@ -627,6 +627,7 @@ namespace InGame
                             NearestTime = time;
                             NearestTimeNoteNum = i;
                         }
+                        if (time > 0) return NearestTimeNoteNum;
                     }
                 }
                 catch (Exception e)
