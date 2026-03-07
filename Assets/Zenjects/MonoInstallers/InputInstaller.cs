@@ -12,7 +12,7 @@ namespace ZenjectSample
         {
             Container
                 .Bind<IInputProvider>()
-                .To<InputProvider>()
+                .To<DebugInputProvider>()
                 .AsCached();
             Container
                 .Bind<IFileLoader>()
@@ -20,7 +20,7 @@ namespace ZenjectSample
                 .AsCached();
             Container
                 .Bind<ISelectInputProvider>()
-                .To<SelectInputProvider>()
+                .To<DebugSelectInputProvider>()
                 .AsCached();
         }
     }

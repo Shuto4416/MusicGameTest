@@ -7,42 +7,16 @@ using UnityEngine;
 
 namespace InputSystem
 {
-    public class InputKey
-    {
-        public KeyCode keyCode;
-        public event Action action;
-        protected List<ITriggerEntry> triggers = new();
-        public InputKey(KeyCode keyCode)
-        {
-            this.keyCode = keyCode;
-        }
-        public void AddTrigger(Func<bool> condition, Action action)
-        {
-            triggers.Add(new TriggerEntry(condition, action));
-        }
-        public void ResetTriggers()
-        {
-            foreach (var trigger in triggers)
-                trigger.Reset();
-        }
-        public void Fire()
-        {
-            Debug.Log($"Action for {keyCode} invoked.");
-            foreach (var trigger in triggers)
-                trigger.TryTrigger();
-            action?.Invoke();
-        }
-    }
-    public class InputProvider : IInputProvider
+    public class DebugInputProvider : IInputProvider
     {
         List<KeyCode> keyCodes = new List<KeyCode>()
         {
-            KeyCode.A, // 1st lane
-            KeyCode.S, // 2nd lane
-            KeyCode.D, // 3rd lane
-            KeyCode.K, // 4th lane
-            KeyCode.L, // 5th lane
-            KeyCode.Semicolon  // 6th lane
+            KeyCode.S, // 1st lane
+            KeyCode.D, // 2nd lane
+            KeyCode.F, // 3rd lane
+            KeyCode.J, // 4th lane
+            KeyCode.K, // 5th lane
+            KeyCode.L  // 6th lane
         };
         List<InputKey> InputKeys = new List<InputKey>(Enumerable.Repeat<InputKey>(null, 6));
 
