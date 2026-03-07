@@ -18,10 +18,7 @@ namespace Audio {
     public enum BGM_STATE
     {
         WAIT,
-        FADE_IN,
         NOW_PLAY,
-        FADE_OUT,
-        FADE_STOP,
         PAUSE,
         END,
     }
