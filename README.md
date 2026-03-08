@@ -65,7 +65,7 @@ NoteEditor が出力する譜面データ形式を解析し、ゲーム内で再
 
 ## クラス図
 
-![クラス図](Assets\Scripts\out\plantuml\include\image.png)
+![クラス図](Assets/Scripts/out/plantuml/include/image.png)
 
 全ての処理は`InGamePresenter`を通して動いているため、`InGamePresenter`はほぼ全てのクラスに依存していますが、クラス図がより見づらくなるため，`InGamePresenter`の依存関係を省略しています．
 
