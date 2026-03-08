@@ -14,6 +14,8 @@ namespace Classes.NotesManager
         private LinkedList<LongNote> UnUseLongNotesObj = new LinkedList<LongNote>();
 
         public List<LinkedList<BaseNote>> UsingNotesObjDatas => UsingNotesObj;
+        public LinkedList<BaseNote> UnUseNotesObjDatas => UnUseNotesObj;
+        public LinkedList<LongNote> UnUseLongNotesObjDatas => UnUseLongNotesObj;
 
 
         [SerializeField]
@@ -168,14 +170,14 @@ namespace Classes.NotesManager
             obj.SetActive(false);
             return objsNote;
         }
-
+        // 本番用
         public void Pop(BaseNote target)
         {
             int laneNum = target.LaneNum;
             int noteType = target.NoteType;
             if (UsingNotesObj[laneNum].Count > 0)
             {
-                BaseNote note = UsingNotesObj[laneNum].First.Value;
+                BaseNote note = UsingNotesObj[laneNum].Find(target).Value;;
                 UsingNotesObj[laneNum].Remove(target);
                 if (noteType == 1) UnUseNotesObj.AddLast(note);
                 if (noteType == 2) UnUseLongNotesObj.AddLast(note as LongNote);
@@ -183,6 +185,19 @@ namespace Classes.NotesManager
                 note.gameObject.SetActive(false);
             }
         }
+        
+
+        // 実験用
+        // public void Pop(BaseNote target)
+        // {
+        //     int laneNum = target.LaneNum;
+        //     if (UsingNotesObj[laneNum].Count > 0)
+        //     {
+        //         BaseNote note = UsingNotesObj[laneNum].Find(target).Value;
+        //         UsingNotesObj[laneNum].Remove(target);
+        //         Destroy(note.gameObject);
+        //     }
+        // }
 
 
         public void Lock()
@@ -202,7 +217,7 @@ namespace Classes.NotesManager
             {
                 Debug.LogError($"LockError: {e}");
             }
-            
+
         }
 
         public void NoteInitialize(BaseNote note, int laneNum, int noteType, int noteSoftLanding, float lifeSpan, Vector3 initialPosition, int isCritical = 0)

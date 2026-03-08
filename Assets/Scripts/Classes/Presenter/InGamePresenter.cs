@@ -458,15 +458,22 @@ namespace InGame
 
         void PrepareNote()
         {
+            CreateSimpleNote();
+            CreateLongNote();
+        }
+        void CreateSimpleNote()
+        {
             BaseNote baseNote = _notesManager.Create();
-            BaseNote longNote = _notesManager.LongNoteCreate();
             Notes.Note note = baseNote.GetComponent<Notes.Note>();
-            Notes.LongNote LongNote = longNote.GetComponent<Notes.LongNote>();
             _notes.Add(note);
-            _notes.Add(LongNote);
             BindNotes(note);
+        }
+        void CreateLongNote()
+        {
+            BaseNote longNote = _notesManager.LongNoteCreate();
+            Notes.LongNote LongNote = longNote.GetComponent<Notes.LongNote>();
+            _notes.Add(LongNote);
             BindNotes(LongNote);
-
         }
         void BindNotes(BaseNote note)
         {
@@ -515,6 +522,22 @@ namespace InGame
         {
             if (CurrentNoteNum < _notesLoader.NotesDatas.Count)
             {
+                try
+                {
+                    if (_notesManager.UnUseNotesObjDatas.Count < 1) CreateSimpleNote();
+                }
+                catch
+                {
+                    CreateSimpleNote();
+                }
+                try
+                {
+                    if (_notesManager.UnUseLongNotesObjDatas.Count < 1) CreateLongNote();
+                }
+                catch
+                {
+                    CreateLongNote();
+                }
                 _notesManager.Generate(CurrentNoteNum, _noteSpeedDisplayPresenter.Model.NoteSpeed, _notesLoader.NotesDatas);
                 if (_notesLoader.NotesDatas[CurrentNoteNum].noteType == 2) CurrentNoteNum++;
                 CurrentNoteNum++;

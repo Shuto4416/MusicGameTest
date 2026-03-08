@@ -48,7 +48,10 @@ namespace Notes
         }
         protected virtual void Move(float speed)
         {
-            gameObject.transform.position = initialPosition + Vector3.down * speed;
+            if (gameObject != null)
+            {
+                gameObject.transform.position = initialPosition + Vector3.down * speed;
+            }
         }
         // protected virtual void Move(float BPM)
         // {
