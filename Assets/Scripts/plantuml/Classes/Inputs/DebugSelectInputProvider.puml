@@ -1,0 +1,15 @@
+@startuml
+!include .\..\..\Interfaces\ISelectInputProvider.puml
+class DebugSelectInputProvider {
+    + DifficultyUp() : bool
+    + DifficultyDown() : bool
+    + Up() : bool
+    + Down() : bool
+    + Right() : bool
+    + Left() : bool
+    + Enter() : bool
+    + ManualUpdate() : void
+}
+note bottom: 選択画面のデバッグ用のキー入力
+ISelectInputProvider <|-- DebugSelectInputProvider
+@enduml

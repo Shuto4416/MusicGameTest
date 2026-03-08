@@ -1,0 +1,41 @@
+@startuml
+enum BGMFile {
+    Silence,
+    GameScene,
+    Result,
+}
+note bottom: デバック用に再生する楽曲の種類
+enum SEFile {
+    Tap,
+    MoveScene,
+    AddScore,
+}
+note bottom: 効果音の種類
+enum BGM_STATE {
+    WAIT,
+    NOW_PLAY,
+    PAUSE,
+    END,
+}
+note bottom: 楽曲の再生状態
+class SoundManager {
+    + PlayBGM(fileName:BGMFile) : void
+    + PlaySE(fileName:SEFile) : void
+    + ManualUpdate() : void
+    + Initialize() : void
+    + PlayClip(audioClip:AudioClip) : void
+    + PlayClipScheduled(audioClip:AudioClip, time:double) : void
+    + SoundPause() : void
+    + SoundUnPause() : void
+    + StopSoundNow() : void
+}
+note bottom: 楽曲や効果音の再生を管理するクラス
+class "Singleton`1"<T> {
+}
+"Singleton`1" "<SoundManager>" <|-- SoundManager
+' SoundManager --> "_audioSourceBGM" AudioSource
+' SoundManager --> "_audioSourceSE" AudioSource
+SoundManager --> "BGM_STATE" BGM_STATE
+SoundManager --> "BGMFile" BGMFile
+SoundManager --> "SEFile" SEFile
+@enduml

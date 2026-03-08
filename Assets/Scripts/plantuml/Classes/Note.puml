@@ -1,0 +1,14 @@
+@startuml
+class Note {
+    + <<override>>  <<event>> OnSofLanEvent : Action<int> 
+    + <<override>>  <<event>> JudgeDisplayEvent : Action<NotesJudgeState> 
+    + <<override>> Initialize(laneNum:int, noteType:int, noteSoftLanding:int, lifeSpan:float, isCritical:int, initialPosition:Vector3) : void
+    + <<override>> ManualUpdate(BPM:float) : void
+    + Push() : void
+    + Invisible() : void
+    + Visible() : void
+    + JudgeDisplay(state:NotesJudgeState) : void
+}
+note bottom: シングルノーツの挙動を管理するクラス
+BaseNote <|-- Note
+@enduml

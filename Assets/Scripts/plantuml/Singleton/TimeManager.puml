@@ -1,0 +1,13 @@
+@startuml
+class TimeManager {
+    + CurrentTime : float <<get>>
+    + ManualUpdate() : void
+    + SetTime(time:float) : void
+    + AddTime(time:float) : void
+    + ResetTime() : void
+}
+note bottom: ゲーム内の時間を管理するクラス
+class "Singleton`1"<T> {
+}
+"Singleton`1" "<TimeManager>" <|-- TimeManager
+@enduml

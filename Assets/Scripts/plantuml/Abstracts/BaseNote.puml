@@ -1,0 +1,20 @@
+@startuml
+!include .\..\Interfaces\ITriggerEntry.puml
+abstract class BaseNote <<MonoBehaviour>>{
+    + LaneNum : int <<get>>
+    + NoteType : int <<get>>
+    + NoteSoftLanding : int <<get>>
+    + LifeSpan : float <<get>>
+    + IsCritical : int <<get>>
+    + IsPushed : bool <<get>>
+    + {static} JudgeLineY : float = 0f
+    + <<virtual>> Initialize(laneNum:int, noteType:int, noteSoftLanding:int, lifeSpan:float, isCritical:int, initialPosition:Vector3) : void
+    +  <<event>> OnClearEvent : Action 
+    + <<virtual>>  <<event>> OnSofLanEvent : Action<int> 
+    + <<virtual>>  <<event>> JudgeDisplayEvent : Action<NotesJudgeState> 
+    + <<virtual>> ManualUpdate(BPM:float) : void
+}
+note bottom: ノーツの共通の挙動を管理するクラス
+' BaseNote --> "InitialPosition" Vector3
+BaseNote .> ITriggerEntry
+@enduml

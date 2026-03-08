@@ -1,0 +1,7 @@
+@startuml
+class NoteSpeedDisplayPresenter <<MonoBehaviour>>{
+    + Initialize() : void
+}
+note bottom: ノーツの速度をviewに伝えるクラス
+NoteSpeedDisplayPresenter --> "Model" NoteSpeedDisplayModel
+@enduml

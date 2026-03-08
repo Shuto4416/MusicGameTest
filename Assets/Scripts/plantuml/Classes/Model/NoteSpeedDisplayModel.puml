@@ -1,0 +1,11 @@
+@startuml
+class NoteSpeedDisplayModel {
+    + NoteSpeed : int <<get>>
+    + NoteSpeedDisplayModel(initSpeed:int)
+    + Set(num:int) : void
+}
+note bottom: ノーツの速度を管理するクラス
+class "ReactiveProperty`1"<T> {
+}
+NoteSpeedDisplayModel --> "_notesSpeed<int>" "ReactiveProperty`1"
+@enduml

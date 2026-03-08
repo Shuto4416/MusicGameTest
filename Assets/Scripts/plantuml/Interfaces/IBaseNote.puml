@@ -1,0 +1,5 @@
+@startuml
+interface IBaseNote {
+    + Initialize(lifeSpan:float, laneNum:int) : void
+}
+@enduml

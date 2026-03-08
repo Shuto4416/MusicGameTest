@@ -1,0 +1,14 @@
+@startuml
+!include .\..\..\Interfaces\IInputProvider.puml
+class DebugInputProvider {
+    + KeyCount() : int
+    + ManualUpdate() : void
+    + IsPushAllLanes() : List<bool>
+    + Initialize() : void
+    + SubscriptForKeyDownAction(lane:int, actions:Action[]) : void
+    + SubscriptForKeyDownOnceAction(lane:int, actions:Action[]) : void
+}
+note bottom: デバッグ用の音ゲー中のキー入力
+IInputProvider <|-- DebugInputProvider
+DebugInputProvider .> InputKey
+@enduml

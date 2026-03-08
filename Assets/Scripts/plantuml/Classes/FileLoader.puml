@@ -1,0 +1,11 @@
+@startuml
+!include .\..\Interfaces\IFileLoader.puml
+class FileLoader {
+    + GenerateSongComponents() : List<LinkedList<SongComponent>>
+    + SongComponentNodeSetAll(easyNode:LinkedListNode<SongComponent>, normalNode:LinkedListNode<SongComponent>, hardNode:LinkedListNode<SongComponent>, expertNode:LinkedListNode<SongComponent>) : void
+    + AddBeatMap(songComponent:SongComponent, songComponents:List<LinkedList<SongComponent>>) : LinkedListNode<SongComponent>
+    + ReadFile() : void
+}
+note bottom: 楽曲の情報をフォルダから読み取って処理するクラス
+IFileLoader <|-- FileLoader
+@enduml

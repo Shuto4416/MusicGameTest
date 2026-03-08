@@ -1,0 +1,13 @@
+@startuml
+!include .\..\Interfaces\ITriggerEntry.puml
+class InputKey {
+    +  <<event>> action : Action 
+    + InputKey(keyCode:KeyCode)
+    + AddTrigger(condition:Func<bool>, action:Action) : void
+    + ResetTriggers() : void
+    + Fire() : void
+}
+note bottom: キーコードと、キーが押されたときに呼び出される関数を保存するクラス
+InputKey --> "keyCode" KeyCode
+InputKey .> ITriggerEntry
+@enduml

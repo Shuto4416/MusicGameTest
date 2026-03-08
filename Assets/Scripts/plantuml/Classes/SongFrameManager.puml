@@ -1,0 +1,8 @@
+@startuml
+class SongFrameManager <<MonoBehaviour>>{
+    + ChangeSong(condition:bool, songComponent:SongComponent) : void
+    + Show() : void
+    + Hide() : void
+}
+note bottom: 選曲画面の表示を管理するクラス
+@enduml

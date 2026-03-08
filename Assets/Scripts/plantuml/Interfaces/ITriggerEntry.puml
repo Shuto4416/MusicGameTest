@@ -1,0 +1,5 @@
+@startuml
+interface ITriggerEntry {
+}
+note bottom: 条件と関数を保存し、条件を満たした関数を一度だけ実行してくれるインターフェース
+@enduml

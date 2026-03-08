@@ -1,0 +1,8 @@
+@startuml
+class Light <<MonoBehaviour>>{
+    + Initialize() : void
+    + ManualUpdate() : void
+    + ColorChange() : void
+}
+note bottom: 押しているレーンを光らせるクラス
+@enduml

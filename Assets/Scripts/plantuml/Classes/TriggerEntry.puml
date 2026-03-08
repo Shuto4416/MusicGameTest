@@ -1,0 +1,29 @@
+@startuml
+!include .\..\Interfaces\ITriggerEntry.puml
+class TriggerEntry {
+    + HasFired : bool <<get>> = false
+    + TriggerEntry(condition:Func<bool>, action:Action)
+    + TryTrigger() : void
+    + Reset() : void
+}
+note bottom: 保存する関数に引数が無い場合のTriggerEntry
+class "TriggerEntry`1"<T> {
+    + HasFired : bool <<get>> = false
+    + TriggerEntry(condition:Func<bool>, action:Action<T>, param:T)
+    + TryTrigger() : void
+    + Reset() : void
+}
+note bottom: 保存する関数に引数がある場合のTriggerEntry
+' class "Func`1"<T> {
+' }
+' class "Action`1"<T> {
+' }
+' ITriggerEntry <|-- TriggerEntry
+' TriggerEntry --> "Condition<bool>" "Func`1"
+' TriggerEntry --> "Action" Action
+' ITriggerEntry <|-- "TriggerEntry`1"
+' "TriggerEntry`1" --> "Condition<bool>" "Func`1"
+' "TriggerEntry`1" --> "Action<T>" "Action`1"
+ITriggerEntry <|.. TriggerEntry
+ITriggerEntry <|.. "TriggerEntry`1"
+@enduml

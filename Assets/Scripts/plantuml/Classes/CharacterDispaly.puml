@@ -1,0 +1,13 @@
+@startuml
+enum NotesJudgeState <<MonoBehaviour>>{
+    Miss,
+    Bad,
+    Great,
+    Perfect,
+}
+note bottom: ノーツの判定の種類
+class CharacterDispaly {
+    + NotesJudgePlay(state:NotesJudgeState) : void
+}
+note bottom: ノーツの判定に応じて判定を表示させるクラス
+@enduml

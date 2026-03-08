@@ -1,0 +1,17 @@
+@startuml
+class LongNote {
+    + SecondLifeSpan : float <<get>>
+    + <<override>>  <<event>> OnSofLanEvent : Action<int> 
+    + <<override>>  <<event>> JudgeDisplayEvent : Action<NotesJudgeState> 
+    + Initialize(laneNum:int, noteType:int, firstNoteSoftLanding:int, firstLifeSpan:float, initialPosition:Vector3, secondNoteSoftLanding:int, secondLifeSpan:float, isCritical:int, endPoint:Vector3) : void
+    + <<override>> ManualUpdate(BPM:float) : void
+    + Invisible() : void
+    + Visible() : void
+    + Press() : void
+    + Push() : void
+    + BadPush() : void
+    + JudgeDisplay(state:NotesJudgeState) : void
+}
+note bottom: ロングノーツの挙動を管理するクラス
+BaseNote <|-- LongNote
+@enduml

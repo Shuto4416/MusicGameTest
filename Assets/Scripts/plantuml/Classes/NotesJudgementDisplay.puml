@@ -1,0 +1,6 @@
+@startuml
+class NotesJudgementDisplay <<MonoBehaviour>>{
+    + Display() : Sequence
+}
+note bottom: ノーツやコンボ数を表示させるときの表示のさせ方を定義しているクラス
+@enduml

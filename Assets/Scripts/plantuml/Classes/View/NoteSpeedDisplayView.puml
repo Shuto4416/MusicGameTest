@@ -1,0 +1,7 @@
+@startuml
+class NoteSpeedDisplayView <<MonoBehaviour>>{
+    + Initialize() : void
+    + ShowSpeed(speed:int) : void
+}
+note bottom: 現在のノーツの速さを示すクラス
+@enduml

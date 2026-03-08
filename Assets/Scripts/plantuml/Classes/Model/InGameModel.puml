@@ -1,0 +1,7 @@
+@startuml
+class InGameModel <<MonoBehaviour>>{
+}
+note bottom: 楽曲や譜面の情報を管理するクラス
+InGameModel --> "NotesLoader" NotesLoader
+InGameModel --> "FileLoader" IFileLoader
+@enduml

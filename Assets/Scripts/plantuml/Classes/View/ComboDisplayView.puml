@@ -1,0 +1,7 @@
+@startuml
+class ComboDisplayView <<MonoBehaviour>>{
+    + Initialize() : void
+    + ShowCombo(combo:int) : void
+}
+note bottom: コンボ数を表示するクラス
+@enduml

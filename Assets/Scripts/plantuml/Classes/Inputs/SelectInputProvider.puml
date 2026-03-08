@@ -1,0 +1,15 @@
+@startuml
+!include .\..\..\Interfaces\ISelectInputProvider.puml
+class SelectInputProvider {
+    + DifficultyUp() : bool
+    + DifficultyDown() : bool
+    + Up() : bool
+    + Down() : bool
+    + Right() : bool
+    + Left() : bool
+    + Enter() : bool
+    + ManualUpdate() : void
+}
+note bottom: 選択画面の本番用のキー入力
+ISelectInputProvider <|-- SelectInputProvider
+@enduml

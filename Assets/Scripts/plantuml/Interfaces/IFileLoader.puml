@@ -1,0 +1,39 @@
+@startuml
+class SongData {
+    + songName : string
+}
+note bottom: 楽曲の名前を保存するクラス
+enum SongDifficulty {
+    Easy,
+    Normal,
+    Hard,
+    Expert,
+}
+note bottom: 楽曲の難易度の種類
+class SongComponent {
+    + difficultyNum : int?
+    + beatMapData : string
+    + SetListNode(linkedListNode:LinkedListNode<SongComponent>, songDifficulty:SongDifficulty) : void
+    + SongComponent(songData:SongData, textureData:byte[], audioClip:AudioClip, songDifficulty:SongDifficulty, difficultyNum:int?, beatMapData:string, Easy:LinkedListNode<SongComponent>, Normal:LinkedListNode<SongComponent>, Hard:LinkedListNode<SongComponent>, Expert:LinkedListNode<SongComponent>)
+}
+note bottom
+    楽曲のそれぞれの難易度の譜面
+    各難易度を表すリストにおける自分の位置
+    楽曲のそれぞれの難易度の数値
+    音源、楽曲名を保存するクラス
+end note
+interface IFileLoader {
+    + ReadFile() : void
+    + GenerateSongComponents() : List<LinkedList<SongComponent>>
+}
+note bottom: 楽曲データを読み込むクラスのインターフェース
+class "LinkedListNode`1"<T> {
+}
+SongComponent --> "Easy<SongComponent>" "LinkedListNode`1"
+SongComponent --> "Normal<SongComponent>" "LinkedListNode`1"
+SongComponent --> "Hard<SongComponent>" "LinkedListNode`1"
+SongComponent --> "Expert<SongComponent>" "LinkedListNode`1"
+SongComponent --> "songData" SongData
+SongComponent --> "audioClip" AudioClip
+SongComponent --> "songDifficulty" SongDifficulty
+@enduml

@@ -1,0 +1,11 @@
+@startuml
+interface IInputProvider {
+    + KeyCount() : int
+    + ManualUpdate() : void
+    + Initialize() : void
+    + IsPushAllLanes() : List<bool>
+    + SubscriptForKeyDownAction(lane:int, action:Action[]) : void
+    + SubscriptForKeyDownOnceAction(lane:int, action:Action[]) : void
+}
+note bottom: 入力に対するイベントを管理してくれるインターフェース
+@enduml

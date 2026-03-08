@@ -1,0 +1,68 @@
+@startuml
+enum GameState {
+    Wait,
+    SelectSong,
+    Loading,
+    PlaySong,
+    Result,
+}
+
+class InGamePresenter {
+    - InGameModel _model
+    - InGameView _view
+    - NotesManager _notesManager
+    - ComboDisplayPresenter _comboDisplayPresenter
+    - NoteSpeedDisplayPresenter _noteSpeedDisplayPresenter
+
+    - IInputProvider inputProvider
+    - ISelectInputProvider selectInputProvider
+
+    - List<BaseNote> _notes
+    - GameState gameState
+    - int CurrentNoteNum
+    - float sofLan
+
+    - int _perfectNum
+    - int _greatNum
+    - int _badNum
+    - int _missNum
+
+    + Start()
+    + Update()
+
+    - SelectSongInitialize()
+    - ResultInitialize()
+    - StartGame()
+
+    - SelectSongManualUpdate()
+    - PlaySongManualUpdate()
+    - ResultManualUpdate()
+
+    - DifficultyUp()
+    - DifficultyDown()
+    - NextSong()
+    - PrevSong()
+    - EnterSong()
+
+    - MusicGameInitialize()
+
+    - PrepareNote()
+    - BindNotes(note)
+
+    - Generate()
+    - Load(jsonData)
+
+    - InputBind()
+    - BindPush()
+
+    - NoteJudge(laneNum)
+    - LongNoteJudge(laneNum)
+
+    - NearestNoteNum(laneNum, isExcludePushedNote)
+    - SearchNote(noteNum, laneNum)
+}
+note bottom: ゲーム全体の挙動を管理するクラス
+
+InGamePresenter --> GameState
+
+@enduml

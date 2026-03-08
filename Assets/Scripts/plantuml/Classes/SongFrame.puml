@@ -1,0 +1,6 @@
+@startuml
+class SongFrame <<MonoBehaviour>>{
+    + Initialize(songComponent:SongComponent) : void
+}
+note bottom: 選曲画面の楽曲情報を表示するクラス
+@enduml

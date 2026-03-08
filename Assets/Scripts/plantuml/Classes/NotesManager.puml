@@ -1,0 +1,15 @@
+@startuml
+class NotesManager <<MonoBehaviour>>{
+    + Initialize(maxBlock:int) : void
+    + Generate(i:int, NotesSpeed:float, notesDatas:List<NotesData>) : void
+    + Create() : BaseNote
+    + LongNoteCreate() : BaseNote
+    + Pop(target:BaseNote) : void
+    + Lock() : void
+    + NoteInitialize(note:BaseNote, laneNum:int, noteType:int, noteSoftLanding:int, lifeSpan:float, initialPosition:Vector3, isCritical:int) : void
+}
+note bottom: ノーツの生成と管理をするクラス
+' class "List`1"<T> {
+' }
+' NotesManager --> "UsingNotesObjDatas<LinkedList<BaseNote>>" "List`1"
+@enduml

@@ -1,0 +1,13 @@
+@startuml
+interface ISelectInputProvider {
+    + DifficultyUp() : bool
+    + DifficultyDown() : bool
+    + Up() : bool
+    + Down() : bool
+    + Right() : bool
+    + Left() : bool
+    + Enter() : bool
+    + ManualUpdate() : void
+}
+note bottom: 入力の状態を表す
+@enduml

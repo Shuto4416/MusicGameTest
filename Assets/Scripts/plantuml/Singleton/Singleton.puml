@@ -1,0 +1,6 @@
+@startuml
+class "Singleton`1"<T> <<MonoBehaviour>>{
+    + {static} instance : T
+}
+note bottom: シングルトンの基底クラス
+@enduml

@@ -1,0 +1,11 @@
+@startuml
+class ComboDisplayModel {
+    + Combo : int <<get>>
+    + ComboDisplayModel(initCombo:int)
+    + Set(num:int) : void
+}
+note bottom: コンボ数を管理するクラス
+class "ReactiveProperty`1"<T> {
+}
+ComboDisplayModel --> "_combo<int>" "ReactiveProperty`1"
+@enduml

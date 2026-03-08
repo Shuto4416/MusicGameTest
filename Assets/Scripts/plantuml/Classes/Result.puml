@@ -1,0 +1,7 @@
+@startuml
+class Result <<MonoBehaviour>>{
+    + <<async>> Show(PC:int, GC:int, BC:int, MC:int, MaxNotesCount:int, token:CancellationToken) : UniTask
+    + Initialize() : void
+}
+note bottom: 音ゲーが終わった後、結果の表示をするクラス
+@enduml

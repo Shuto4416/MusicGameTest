@@ -1,0 +1,7 @@
+@startuml
+class ComboDisplayPresenter <<MonoBehaviour>>{
+    + Initialize() : void
+}
+ComboDisplayPresenter --> "Model" ComboDisplayModel
+note bottom: コンボ数をviewに伝えるクラス
+@enduml

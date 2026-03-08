@@ -1,0 +1,40 @@
+@startuml
+class Data {
+    + name : string
+    + maxBlock : int
+    + BPM : int
+    + offset : int
+}
+note bottom: 譜面の楽曲の情報を読み取るクラス
+class "Note`1" {
+    + type : int
+    + num : int
+    + block : int
+    + LPB : int
+    + softLanding : int = 100
+    + isCritical : int = 0
+}
+note bottom: ノーツの情報を読み取るクラス
+class NotesData {
+    + laneNum : int
+    + noteType : int
+    + noteSoftLanding : int
+    + isCritical : int
+    + noteAbsTime : float
+    + noteRelTime : float
+    + NotesData(laneNum:int, noteType:int, noteSoftLanding:int, isCritical:int, noteAbsTime:float, noteRelTime:float)
+}
+note bottom: ノーツのデータを保存するクラス
+class NotesLoader <<MonoBehaviour>>{
+    + NoteNum : int <<get>>
+    + MaxBlock : int <<get>>
+    + Initialize(jsonData:string) : void
+}
+note bottom: 譜面の情報を読み取り、ノーツの情報にして出力するクラス
+' class "List`1"<T> {
+' }
+' NotesLoader --> "NotesDatas<NotesData>" "List`1"
+NotesLoader --> NotesData
+NotesLoader --> Data
+NotesLoader --> "Note`1"
+@enduml

@@ -1,0 +1,5 @@
+@startuml
+class FPSChecker <<MonoBehaviour>> {
+}
+note bottom: FPSを計測するクラス
+@enduml
