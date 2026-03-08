@@ -63,6 +63,12 @@ NoteEditor が出力する譜面データ形式を解析し、ゲーム内で再
 
 > NoteEditor :  [GitHub - setchi/NoteEditor: Note editor for rhythm games. · GitHub](https://github.com/setchi/NoteEditor)
 
+## クラス図
+
+![クラス図](D:\Unity\Project\MusicGameTest\Assets\Scripts\out\plantuml\include\image.png)
+
+全ての処理は`InGamePresenter`を通して動いているため、`InGamePresenter`はほぼ全てのクラスに依存していますが、クラス図がより見づらくなるため，`InGamePresenter`の依存関係を省略しています．
+
 ## ノーツの処理について
 
 ノーツは`linkedlist`を使って制御をしています。理由は`list`だと先頭要素を削除する処理が重いからです．
