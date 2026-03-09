@@ -775,7 +775,7 @@ namespace InGame
                     longNote.Push();
                     return true;
                 }
-                else if (NearestTime < 1f / 60f * 8.5f)
+                else if (NearestTime < 1f / 60f * 12.5f)
                 {
                     longNote.JudgeDisplay(NotesJudgeState.Great);
                     longNote.Push();
@@ -794,13 +794,12 @@ namespace InGame
 
         void LongNoteJudge(int laneNum)
         {
-            int NearestTimeNoteNum = NearestNoteNum(laneNum, false);
-            if (NearestTimeNoteNum == -1) return;
-            Notes.LongNote longNote = null;
-            if (_notesLoader.NotesDatas[NearestTimeNoteNum].noteType != 2) return;
-            longNote = SearchNote(NearestTimeNoteNum, laneNum)?.GetComponent<LongNote>();
-            if (longNote == null) return;
-            if (longNote.IsPushed) longNote.Press();
+            if (!(_notesManager.UsingNotesObjDatas[laneNum]?.Count > 0)) return;
+            if (_notesManager.UsingNotesObjDatas[laneNum].First.Value is Notes.LongNote)
+            {
+                Notes.LongNote longNote = _notesManager.UsingNotesObjDatas[laneNum].First.Value as Notes.LongNote;
+                longNote.Press();
+            }
         }
         
         

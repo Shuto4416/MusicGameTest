@@ -79,7 +79,7 @@ public class NotesLoader : MonoBehaviour
         Debug.Log($"総ノーツ数: {noteNum}, 曲名: {inputJson.name}, BPM: {inputJson.BPM}, オフセット: {inputJson.offset}");
         Debug.Log($"ノーツ1 LPB: {inputJson.notes[0].LPB}");
         maxBlock = inputJson.maxBlock;
-        CreateNotesList(inputJson, inputJson.notes);
+        CreateNotesList(inputJson, inputJson.notes, 0);
         for (int i = 0; i < notesDatas.Count; i++)
         {
             var num = i - 1;
@@ -92,15 +92,18 @@ public class NotesLoader : MonoBehaviour
         for (int i = 0; i < notesDatas.Count; i++) Debug.Log($" type: {notesDatas[i].noteType}, lanenum: {notesDatas[i].laneNum}, AbsTime: {notesDatas[i].noteAbsTime}, RelTime: {notesDatas[i].noteRelTime}, softLanding: {notesDatas[i].noteSoftLanding}, isCritical: {notesDatas[i].isCritical}");
     }
 
-    private void CreateNotesList(Data inputJson, Note[] notes)
+    private void CreateNotesList(Data inputJson, Note[] notes, int addnum)
     {
         for (int i = 0; i < notes.Length; i++)
         {
             //時間を計算
-            float absTime = (60 / (inputJson.BPM * (float)notes[i].LPB) * notes[i].num) /*+ ((60f / inputJson.BPM * 4f) *(inputJson.offset / 2400))*/ + inputJson.offset/50000;
+            float absTime = (60 / (inputJson.BPM * (float)notes[i].LPB) * (notes[i].num + addnum)) /*+ ((60f / inputJson.BPM * 4f) *(inputJson.offset / 2400))*/ + inputJson.offset/50000;
             //リストに追加
             notesDatas.Add(new NotesData(notes[i].block, notes[i].type, notes[i].softLanding, notes[i].isCritical , absTime, 0));
-            if (notes[i].notes != null) CreateNotesList(inputJson, notes[i].notes);
+            if (notes[i].notes != null)
+            {
+                CreateNotesList(inputJson, notes[i].notes, 0);
+            }
         }
     }
 

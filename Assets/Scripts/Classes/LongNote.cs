@@ -14,7 +14,7 @@ namespace Notes {
         private Vector3 LineRendererEndPoint;
         private bool isJudged = false;
         private bool isBad = false;
-        private int pushFrameCount = 0;
+        private int pushFrameCount;
         private float _secondLifeSpan;
         public float SecondLifeSpan => _secondLifeSpan;
         public override event Action<int> OnSofLanEvent;
@@ -28,11 +28,12 @@ namespace Notes {
             isBad = false;
             isJudged = false;
             LineRendererEndPoint = endPoint;
+            pushFrameCount = 10;
             Debug.Log($"firstLifeSpan: {firstLifeSpan}, secondLifeSpan: {_secondLifeSpan}");
             Visible();
             base.AddTrigger<int>(() => firstLifeSpan - time <= 0, OnSofLanEvent, firstNoteSoftLanding);
             base.AddTrigger<int>(() => _secondLifeSpan - time <= 0, OnSofLanEvent, secondNoteSoftLanding);
-            base.AddTrigger(() => _secondLifeSpan - time <= 0 && !isJudged, () => Judge());
+            base.AddTrigger(() => _secondLifeSpan - TimeManager.instance.CurrentTime <= 0 && !isJudged, () => Judge());
             base.AddTrigger(() => SecondLifeSpan + 1f / 60f * 14f - TimeManager.instance.CurrentTime < 0, () => base.Clear());
         }
 
@@ -45,28 +46,26 @@ namespace Notes {
                 if (base.lifeSpan + 1f/60f * 13.5f - time < 0f && !isPushed && _renderer.enabled)
                 {
                     JudgeDisplay(NotesJudgeState.Miss);
-                    Debug.Log("Miss2");
+                    Debug.Log("Miss2!!");
                     isJudged = true;
                     Invisible();
                 }
                 if (isPushed && _secondLifeSpan - time > 0 && !isBad)
                 {
-                    if (pushFrameCount > 0)
-                    {
-                        pushFrameCount--;
-                    }
-                    else if (_renderer.enabled && pushFrameCount < 0)
+                    Debug.Log("#101decrease");
+                    pushFrameCount--;
+                    if (_renderer.enabled && pushFrameCount < 0)
                     {
                         JudgeDisplayEvent?.Invoke(NotesJudgeState.Miss);
                         isJudged = true;
                         Invisible();
-                        Debug.Log("Miss");
+                        Debug.Log("Miss1!!");
                     }
                 }
                 if (isBad && _renderer.enabled)
                 {
                     isJudged = true;
-                    Debug.Log("Miss4");
+                    Debug.Log("Miss4!!");
                     JudgeDisplayEvent?.Invoke(NotesJudgeState.Miss);
                 }
             }
@@ -95,8 +94,8 @@ namespace Notes {
 
         public void Press()
         {
-            Debug.Log("Pressed");
-            pushFrameCount += 2;
+            Debug.Log("#101Pressed!");
+            pushFrameCount = 10;
         }
         public void Push()
         {
@@ -114,19 +113,19 @@ namespace Notes {
         private void Judge()
         {
             isJudged = true;
-            Debug.Log("Judge");
+            Debug.Log("Judge!!");
             if (isPushed && pushFrameCount > 0)
             {
                 Debug.Log($"isPushed: {isPushed}, pushFrameCount: {pushFrameCount}");
                 JudgeDisplayEvent?.Invoke(NotesJudgeState.Perfect);
                 Invisible();
-                Debug.Log("P");
+                Debug.Log("P!!");
             }
             else
             {
                 Debug.Log($"isPushed: {isPushed}, pushFrameCount: {pushFrameCount}");
                 JudgeDisplayEvent?.Invoke(NotesJudgeState.Miss);
-                Debug.Log("Miss3");
+                Debug.Log("Miss3!!");
                 Invisible();
             }
         }
