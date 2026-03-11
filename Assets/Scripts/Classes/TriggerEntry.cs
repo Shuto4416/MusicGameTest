@@ -6,51 +6,51 @@ namespace Classes
 {
     public class TriggerEntry : ITriggerEntry
     {
-        public bool HasFired { get; private set; } = false;
-        public Func<bool> Condition;
-        public Action Action;
+        public bool isFired { get; private set; } = false;
+        public Func<bool> condition;
+        public Action action;
 
         public TriggerEntry(Func<bool> condition, Action action)
         {
-            Condition = condition;
-            Action = action;
+            this.condition = condition;
+            this.action = action;
         }
 
         public void TryTrigger()
         {
-            if(!HasFired && Condition())
+            if(!isFired && condition())
             {
-                HasFired = true;
-                Action?.Invoke();
+                isFired = true;
+                action?.Invoke();
             }
         }
-        public void Reset() => HasFired = false;
+        public void Reset() => isFired = false;
     }
 
     public class TriggerEntry<T> : ITriggerEntry
     {
-        public bool HasFired { get; private set; } = false;
-        public Func<bool> Condition;
-        public Action<T> Action;
+        public bool isFired { get; private set; } = false;
+        public Func<bool> condition;
+        public Action<T> action;
         private readonly T _param;
 
         public TriggerEntry(Func<bool> condition, Action<T> action, T param)
         {
-            Condition = condition;
-            Action = action;
-            _param = param;
+            this.condition = condition;
+            this.action = action;
+            this._param = param;
         }
 
         public void TryTrigger()
         {
-            if (!HasFired && Condition())
+            if (!isFired && condition())
             {
-                HasFired = true;
-                Action?.Invoke(_param);
+                isFired = true;
+                action?.Invoke(_param);
             }
         }
 
-        public void Reset() => HasFired = false;
+        public void Reset() => isFired = false;
     }
 }
 

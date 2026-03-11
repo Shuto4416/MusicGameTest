@@ -2,8 +2,8 @@ namespace Classes
 {
     public interface ITriggerEntry
     {
-        bool HasFired { get; }
-        void TryTrigger();
-        void Reset();
+        public bool isFired { get; }
+        public void TryTrigger();
+        public void Reset();
     }
 }

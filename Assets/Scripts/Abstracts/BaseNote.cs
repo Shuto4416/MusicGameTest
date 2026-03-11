@@ -32,7 +32,7 @@ namespace Notes
         protected float targetAbsTime;
 
 
-        public virtual void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical, Vector3 initialPosition/*, float spawnAbsTime, float targetAbsTime*/)
+        public virtual void Initialize(int laneNum, int noteType, int noteSoftLanding, float lifeSpan, int isCritical, Vector3 initialPosition)
         {
             this.laneNum = laneNum;
             this.noteType = noteType;
@@ -40,9 +40,6 @@ namespace Notes
             this.lifeSpan = lifeSpan;
             this.isCritical = isCritical;
             this.initialPosition = initialPosition;
-            // this.spawnAbsTime = spawnAbsTime;
-            // this.targetAbsTime = targetAbsTime;
-            // transform.position = initialPosition;
             isPushed = false;
             triggers.Clear();
         }

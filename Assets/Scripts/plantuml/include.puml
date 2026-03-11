@@ -12,22 +12,6 @@
     !include .\\Classes\Result.puml
     !include .\\Classes\SongFrame.puml
     !include .\\Classes\SongFrameManager.puml
-        !include .\\Interfaces\ITriggerEntry.puml
-        !include .\\Classes\TriggerEntry.puml
-    package Notes {
-        !include .\\Abstracts\BaseNote.puml
-        !include .\\Classes\LongNote.puml
-        !include .\\Classes\Note.puml
-    }
-    package InputSystem {
-        !include .\\Classes\Inputs\DebugInputProvider.puml
-        !include .\\Classes\Inputs\DebugSelectInputProvider.puml
-        !include .\\Classes\Inputs\InputProvider.puml
-        !include .\\Classes\Inputs\SelectInputProvider.puml
-        !include .\\Classes\InputKey.puml
-        !include .\\Interfaces\IInputProvider.puml
-        !include .\\Interfaces\ISelectInputProvider.puml
-    }
     folder Model {
     !include .\\Classes\Model\ComboDisplayModel.puml
     !include .\\Classes\Model\InGameModel.puml
