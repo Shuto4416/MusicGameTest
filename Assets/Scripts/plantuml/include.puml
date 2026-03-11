@@ -1,16 +1,10 @@
 @startuml
 
-!include .\\Audio\SoundManager.puml
     !include .\\Classes\CharacterDispaly.puml
     !include .\\Classes\FileLoader.puml
-    !include .\\Classes\FPSChecker.puml
-    !include .\\Classes\Light.puml
 
-    !include .\\Classes\NotesJudgementDisplay.puml
     !include .\\Classes\NotesLoader.puml
-    !include .\\Classes\NotesManager.puml
     !include .\\Classes\Result.puml
-    !include .\\Classes\SongFrame.puml
     !include .\\Classes\SongFrameManager.puml
     folder Model {
     !include .\\Classes\Model\ComboDisplayModel.puml
@@ -28,10 +22,7 @@
         !include .\\Classes\View\NoteSpeedDisplayView.puml
     }
         !include .\\Interfaces\IFileLoader.puml
-    folder Singleton {
-        !include .\\Singleton\Singleton.puml
-        !include .\\Singleton\TimeManager.puml
-    }
+
 
 
 

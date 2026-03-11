@@ -1,0 +1,12 @@
+@startuml
+
+    !include .\\Classes\FPSChecker.puml
+    !include .\\Classes\Light.puml
+
+    !include .\\Classes\NotesJudgementDisplay.puml
+    !include .\\Classes\NotesManager.puml
+    !include .\\Classes\SongFrame.puml
+
+
+
+@enduml

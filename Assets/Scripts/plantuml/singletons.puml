@@ -1,0 +1,12 @@
+@startuml
+
+
+    folder Singleton {
+        !include .\\Singleton\Singleton.puml
+        !include .\\Singleton\TimeManager.puml
+        !include .\\Audio\SoundManager.puml
+    }
+
+
+
+@enduml
