@@ -16,6 +16,8 @@ namespace Classes.NotesManager
         public List<LinkedList<BaseNote>> UsingNotesObjDatas => UsingNotesObj;
         public LinkedList<BaseNote> UnUseNotesObjDatas => UnUseNotesObj;
         public LinkedList<LongNote> UnUseLongNotesObjDatas => UnUseLongNotesObj;
+        private float _offset = 0;
+        public float Offset => _offset;
 
 
         [SerializeField]
@@ -109,15 +111,15 @@ namespace Classes.NotesManager
         private Vector3 GeneratePosition(int i, float NotesSpeed, List<NotesData> notesDatas)
         {
             float y = 0;
-            float time = notesDatas[i].noteAbsTime;
-            if(i != 0)
+            float time = notesDatas[i].noteAbsTime - _offset;
+            if (i != 0)
             {
                 // int beforeLaneNum = notesDatas[i-1].laneNum;
                 // 直前に生成したノーツの情報を取得
                 // y = UsingNotesObj[beforeLaneNum].Last.Value.transform.position.y;
                 // time = notesDatas[i].noteRelTime * notesDatas[i-1].noteSoftLanding / 100f;
             }
-            Vector3 vector3 = new Vector3(-2.5f + notesDatas[i].laneNum, y + NotesSpeed/60f * time, -1);
+            Vector3 vector3 = new Vector3(-2.5f + notesDatas[i].laneNum, y + NotesSpeed * time / 60f, -1);
             return vector3;
         }
 
@@ -132,7 +134,7 @@ namespace Classes.NotesManager
                     BaseNote note = UnUseNotesObj.First.Value;
                     UnUseNotesObj.RemoveFirst();
                     UsingNotesObj[notesDatas[i].laneNum].AddLast(note);
-                    NoteInitialize(note, notesDatas[i].laneNum, notesDatas[i].noteType, notesDatas[i].noteSoftLanding, notesDatas[i].noteAbsTime, vector3);
+                    NoteInitialize(note, notesDatas[i].laneNum, notesDatas[i].noteType, notesDatas[i].noteSoftLanding, notesDatas[i].noteAbsTime - _offset, vector3);
                     note.gameObject.SetActive(true);
                 }
             }
@@ -146,8 +148,8 @@ namespace Classes.NotesManager
                     UsingNotesObj[notesDatas[i].laneNum].AddLast(note);
                     // Vector3 endPoint = new Vector3(-2.5f + notesDatas[i + 1].laneNum, CalcRelDistance(i + 1, NotesSpeed, notesDatas), -1f);
                     // Vector3 endPoint = new Vector3(-2.5f + notesDatas[i].laneNum, NotesSpeed/60f * (notesDatas[i+1].noteAbsTime - notesDatas[i].noteAbsTime) * (notesDatas[i-1].noteSoftLanding / 100f), -1);
-                    Vector3 endPoint = new Vector3(-2.5f + notesDatas[i].laneNum, GeneratePosition(i+1, NotesSpeed, notesDatas).y - GeneratePosition(i, NotesSpeed, notesDatas).y, -1);
-                    note.Initialize(notesDatas[i].laneNum, notesDatas[i].noteType, notesDatas[i].noteSoftLanding, notesDatas[i].noteAbsTime, vector3, notesDatas[i + 1].noteSoftLanding, notesDatas[i + 1].noteAbsTime, notesDatas[i].isCritical, endPoint);
+                    Vector3 endPoint = new Vector3(-2.5f + notesDatas[i].laneNum, GeneratePosition(i + 1, NotesSpeed, notesDatas).y - GeneratePosition(i, NotesSpeed, notesDatas).y, -1);
+                    note.Initialize(notesDatas[i].laneNum, notesDatas[i].noteType, notesDatas[i].noteSoftLanding, notesDatas[i].noteAbsTime - _offset, vector3, notesDatas[i + 1].noteSoftLanding, notesDatas[i + 1].noteAbsTime - _offset, notesDatas[i].isCritical, endPoint);
                     note.gameObject.SetActive(true);
                 }
             }
@@ -177,7 +179,7 @@ namespace Classes.NotesManager
             int noteType = target.NoteType;
             if (UsingNotesObj[laneNum].Count > 0)
             {
-                BaseNote note = UsingNotesObj[laneNum].Find(target).Value;;
+                BaseNote note = UsingNotesObj[laneNum].Find(target).Value; ;
                 UsingNotesObj[laneNum].Remove(target);
                 if (noteType == 1) UnUseNotesObj.AddLast(note);
                 if (noteType == 2) UnUseLongNotesObj.AddLast(note as LongNote);
@@ -185,7 +187,7 @@ namespace Classes.NotesManager
                 note.gameObject.SetActive(false);
             }
         }
-        
+
 
         // 実験用
         // public void Pop(BaseNote target)
@@ -223,6 +225,11 @@ namespace Classes.NotesManager
         public void NoteInitialize(BaseNote note, int laneNum, int noteType, int noteSoftLanding, float lifeSpan, Vector3 initialPosition, int isCritical = 0)
         {
             note.Initialize(laneNum, noteType, noteSoftLanding, lifeSpan, isCritical, initialPosition);
+        }
+
+        public void SetOffset(int offset)
+        {
+            _offset = offset / 1000;
         }
 
 

@@ -91,3 +91,6 @@ backup.git/
 /.vscode
 # modulesファイルも要らん
 .gitmodules
+
+/[Aa]ssets/SongDatas/
+

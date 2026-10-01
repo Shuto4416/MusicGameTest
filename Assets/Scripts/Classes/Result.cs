@@ -26,15 +26,19 @@ public class Result : MonoBehaviour
     [SerializeField]
     private TextMeshPro _missCount;
     [SerializeField]
+    private TextMeshProUGUI _avgLatencyTime;
+    [SerializeField]
     private GameObject[] Ranks;
 
-    public async UniTask Show(int PC, int GC, int BC, int MC, int MaxNotesCount, CancellationToken token)
+    public async UniTask Show(int PC, int GC, int BC, int MC, int MaxNotesCount, float sumLatencyTime, CancellationToken token)
     {
         int _PC = 0, _GC = 0, _BC = 0, _MC = 0, _Score = 0;
         int Score = PC * 10000 + GC * 7000 + BC * 1000;
         float RankPercent = Score*100 / (MaxNotesCount * 10000);
+        float avgLatencyTime = sumLatencyTime / (PC + GC + BC);
         var sequence = DOTween.Sequence();
         _result.SetActive(true);
+        _avgLatencyTime.text = $"平均遅延時間：{avgLatencyTime*1000:F0}ms";
         SoundManager.instance.PlaySE(SEFile.AddScore);
         // _scoreObj.SetActive(true);
         // _notesJudge.SetActive(true);

@@ -17,6 +17,7 @@ using Audio;
 using UnityEngine.Rendering;
 using System.Threading;
 using Classes.NotesManager;
+using TMPro;
 
 
 public enum GameState
@@ -25,6 +26,7 @@ public enum GameState
     SelectSong,
     Loading,
     PlaySong,
+    LatencyAdjustment,
     Result
 }
 
@@ -46,6 +48,12 @@ namespace InGame
         private ComboDisplayPresenter _comboDisplayPresenter;
         [SerializeField]
         private NoteSpeedDisplayPresenter _noteSpeedDisplayPresenter;
+        [SerializeField]
+        private P_LatencyAdjustment _LatencyAdjustment;
+        [SerializeField]
+        private TMP_InputField _LatencyOffset;
+        [SerializeField]
+        private TMP_InputField _MusicLatencyOffset;
         private IInputProvider inputProvider;
         private ISelectInputProvider selectInputProvider;
         private List<BaseNote> _notes = new List<BaseNote>();
@@ -63,6 +71,9 @@ namespace InGame
         private int _missNum;
         private int[] _notesSpeeds = { 400, 600, 800, 1000};
         private int _speedSelector = 0;
+        private float MLOffset;
+
+        private float _SUM_NearestTime;
 
         [Inject]
         void Injection(IInputProvider inputProvider)
@@ -97,6 +108,11 @@ namespace InGame
 
         void SelectSongInitialize()
         {
+            _LatencyAdjustment.Initialize();
+            _LatencyOffset.gameObject.SetActive(true);
+            _LatencyOffset.text = "0";
+            _MusicLatencyOffset.gameObject.SetActive(true);
+            _MusicLatencyOffset.text = "0";
             _view.SongFrameManager.Show();
             _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
             gameState = GameState.SelectSong;
@@ -105,7 +121,7 @@ namespace InGame
         async UniTask ResultInitialize(CancellationToken token)
         {
             _view.result.Initialize();
-            await _view.result.Show(_perfectNum, _greatNum, _badNum, _missNum, _notesLoader.NotesDatas.Count, token);
+            await _view.result.Show(_perfectNum, _greatNum, _badNum, _missNum, _notesLoader.NotesDatas.Count, _SUM_NearestTime, token);
             gameState = GameState.Result;
         }
 
@@ -148,12 +164,21 @@ namespace InGame
             {
                 case GameState.SelectSong:
                     SelectSongManualUpdate();
+                    if (_LatencyAdjustment.isClick) gameState = GameState.LatencyAdjustment;
                     break;
                 case GameState.PlaySong:
                     PlaySongManualUpdate();
                     break;
                 case GameState.Result:
                     ResultManualUpdate();
+                    break;
+                case GameState.LatencyAdjustment:
+                    _LatencyAdjustment.ManualUpdate();
+                    if (!_LatencyAdjustment.isClick)
+                    {
+                        gameState = GameState.SelectSong;
+                        _LatencyAdjustment.Initialize();
+                    }
                     break;
             }
 
@@ -429,7 +454,7 @@ namespace InGame
         private void PlaySongManualUpdate()
         {
 
-            if (SoundManager.instance._audioSourceBGM.isPlaying)
+            if (SoundManager.instance._audioSourceBGM.isPlaying || CurrentNoteNum < _notesLoader.NotesDatas.Count)
             {
                 TimeManager.instance.SetTime((float)(AudioSettings.dspTime - startTime));
                 var time = TimeManager.instance.CurrentTime;
@@ -438,7 +463,7 @@ namespace InGame
                     // Debug.Log($"Time: {TimeManager.instance.CurrentTime}");
                     foreach (BaseNote note in _notes)
                     {
-                        note.ManualUpdate((_noteSpeedDisplayPresenter.Model.NoteSpeed / 60f) * (sofLan / 100f) * time/*TimeManager.instance.CurrentTime*/);
+                        note.ManualUpdate(time * (_noteSpeedDisplayPresenter.Model.NoteSpeed / 60f) * (sofLan / 100f) /*TimeManager.instance.CurrentTime*/);
                     }
                     // TimeManager.instance.ManualUpdate();
                     inputProvider.ManualUpdate();
@@ -560,10 +585,16 @@ namespace InGame
 
         void MusicGameInitialize()
         {
+            _SUM_NearestTime = 0f;
+            _LatencyAdjustment.Hide();
+            _notesManager.SetOffset(int.Parse(_LatencyOffset.text));
+            MLOffset = int.Parse(_MusicLatencyOffset.text) / 1000;
+            _LatencyOffset.gameObject.SetActive(false);
+            _MusicLatencyOffset.gameObject.SetActive(false);
             _comboDisplayPresenter.Initialize();
             TimeManager.instance.ResetTime();
-            startTime = AudioSettings.dspTime + 1.0f;
-            SoundManager.instance.PlayClipScheduled(currentSong.Value.audioClip, startTime);
+            startTime = AudioSettings.dspTime + 2.0f;
+            SoundManager.instance.PlayClipScheduled(currentSong.Value.audioClip, startTime - MLOffset);
             TimeManager.instance.SetTime((float)(AudioSettings.dspTime - startTime));
             // SoundManager.instance.PlayClip(currentSong.Value.audioClip);
             // await UniTask.Delay(450, cancellationToken: ct);
@@ -729,6 +760,7 @@ namespace InGame
 
         }
 
+
         bool NoteJudgeProcess(int i)
         {
             var laneNum = _notesLoader.NotesDatas[i].laneNum;
@@ -740,16 +772,17 @@ namespace InGame
             {
                 note = SearchNote(i, laneNum)?.GetComponent<Notes.Note>();
                 if (note == null) return false;
+                if (NearestTime < 1f / 60f * 13.5f) _SUM_NearestTime += NearestTime;
                 if (NearestTime < 1f / 60f * 4.5f)
                 {
-                    // SoundManager.instance.PlaySE(SEFile.Tap);
+                    SoundManager.instance.PlaySE(SEFile.Tap);
                     note.JudgeDisplay(NotesJudgeState.Perfect);
                     note.Push();
                     return true;
                 }
                 else if (NearestTime < 1f / 60f * 8.5f)
                 {
-                    // SoundManager.instance.PlaySE(SEFile.Tap);
+                    SoundManager.instance.PlaySE(SEFile.Tap);
                     note.JudgeDisplay(NotesJudgeState.Great);
                     note.Push();
                     return true;
@@ -769,20 +802,24 @@ namespace InGame
                 longNote = SearchNote(i, laneNum)?.GetComponent<LongNote>();
                 if (longNote == null) return false;
                 if (longNote.IsPushed) return false;
+                if (NearestTime < 1f / 60f * 13.5f) _SUM_NearestTime += NearestTime;
                 if (NearestTime < 1f / 60f * 4.5f)
                 {
+                    SoundManager.instance.PlaySE(SEFile.Tap);
                     longNote.JudgeDisplay(NotesJudgeState.Perfect);
                     longNote.Push();
                     return true;
                 }
-                else if (NearestTime < 1f / 60f * 12.5f)
+                else if (NearestTime < 1f / 60f * 8.5f)
                 {
+                    SoundManager.instance.PlaySE(SEFile.Tap);
                     longNote.JudgeDisplay(NotesJudgeState.Great);
                     longNote.Push();
                     return true;
                 }
                 else if (NearestTime < 1f / 60f * 13.5f)
                 {
+                    SoundManager.instance.PlaySE(SEFile.Tap);
                     longNote.JudgeDisplay(NotesJudgeState.Bad);
                     longNote.BadPush();
                     return true;

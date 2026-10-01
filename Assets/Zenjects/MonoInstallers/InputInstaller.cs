@@ -12,7 +12,7 @@ namespace ZenjectSample
         {
             Container
                 .Bind<IInputProvider>()
-                .To<DebugInputProvider>()
+                .To<InputProvider>()
                 .AsCached();
             Container
                 .Bind<IFileLoader>()
@@ -21,6 +21,10 @@ namespace ZenjectSample
             Container
                 .Bind<ISelectInputProvider>()
                 .To<DebugSelectInputProvider>()
+                .AsCached();
+            Container
+                .Bind<ILatencyAdjustInputProvider>()
+                .To<LatencyAdjustInputProvider>()
                 .AsCached();
         }
     }

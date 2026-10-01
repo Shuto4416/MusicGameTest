@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 using TheSingleton;
+using Audio;
+using Unity.VisualScripting;
 
 
 namespace Notes {
@@ -118,6 +120,7 @@ namespace Notes {
             {
                 Debug.Log($"isPushed: {isPushed}, pushFrameCount: {pushFrameCount}");
                 JudgeDisplayEvent?.Invoke(NotesJudgeState.Perfect);
+                SoundManager.instance.PlaySE(SEFile.Tap);
                 Invisible();
                 Debug.Log("P!!");
             }
