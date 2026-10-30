@@ -18,6 +18,8 @@ using UnityEngine.Rendering;
 using System.Threading;
 using Classes.NotesManager;
 using TMPro;
+using System.Runtime.InteropServices;
+using System.Linq;
 
 
 public enum GameState
@@ -69,11 +71,13 @@ namespace InGame
         private int _greatNum;
         private int _badNum;
         private int _missNum;
-        private int[] _notesSpeeds = { 400, 600, 800, 1000};
+        private int[] _notesSpeeds = { 400, 600, 800, 1000 };
         private int _speedSelector = 0;
         private float MLOffset;
 
         private float _SUM_NearestTime;
+
+        private InputCommandLogger commandLogger;
 
         [Inject]
         void Injection(IInputProvider inputProvider)
@@ -85,8 +89,12 @@ namespace InGame
         {
             this.selectInputProvider = selectInputProvider;
         }
+
+        // [DllImport("AudioLatencyPluginV1-1")]
+        // private static extern float GetAudioStreamLatency();
         void Start()
         {
+            commandLogger = new InputCommandLogger();
             _noteSpeedDisplayPresenter.Initialize();
             _noteSpeedDisplayPresenter.Model.Set(_notesSpeeds[_speedSelector]);
             songComponents = _model.FileLoader.GenerateSongComponents();
@@ -108,6 +116,8 @@ namespace InGame
 
         void SelectSongInitialize()
         {
+            TimeManager.instance.SetTime(0f);
+            commandLogger.ResetCommand();
             _LatencyAdjustment.Initialize();
             _LatencyOffset.gameObject.SetActive(true);
             _LatencyOffset.text = "0";
@@ -121,13 +131,20 @@ namespace InGame
         async UniTask ResultInitialize(CancellationToken token)
         {
             _view.result.Initialize();
+            SoundManager.instance.StopSoundNow();
+            foreach (BaseNote _baseNote in _notes)
+            {
+                if (!(_baseNote.gameObject.activeSelf)) continue; 
+                _notesManager.Pop(_baseNote);
+            }
             await _view.result.Show(_perfectNum, _greatNum, _badNum, _missNum, _notesLoader.NotesDatas.Count, _SUM_NearestTime, token);
             gameState = GameState.Result;
         }
 
         void StartGame()
         {
-            MusicGameInitialize();
+            BootDLL();
+            // MusicGameInitialize();
         }
 
         SongComponent isCurrentSongNull(LinkedListNode<SongComponent> linkedListNode)
@@ -196,6 +213,8 @@ namespace InGame
 
         private void SelectSongManualUpdate()
         {
+            commandLogger.ManualUpdate(TimeManager.instance.CurrentTime);
+            TimeManager.instance.AddTime(Time.deltaTime);
             DifficultyUp();
             DifficultyDown();
             NextSong();
@@ -216,6 +235,7 @@ namespace InGame
         {
             if (selectInputProvider.Up())
             {
+                commandLogger.inputChar('U', TimeManager.instance.CurrentTime);
                 _speedSelector = RotSelector(++_speedSelector);
                 _noteSpeedDisplayPresenter.Model.Set(_notesSpeeds[_speedSelector]);
             }
@@ -225,6 +245,7 @@ namespace InGame
         {
             if (selectInputProvider.Down())
             {
+                commandLogger.inputChar('D', TimeManager.instance.CurrentTime);
                 _speedSelector = RotSelector(--_speedSelector);
                 _noteSpeedDisplayPresenter.Model.Set(_notesSpeeds[_speedSelector]);
             }
@@ -234,6 +255,7 @@ namespace InGame
         {
             if (selectInputProvider.DifficultyUp())
             {
+                commandLogger.inputChar('A', TimeManager.instance.CurrentTime);
                 currentSongDifficulty = AddDifficulty(currentSongDifficulty);
                 DifficultyChange(currentSongDifficulty);
                 _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
@@ -244,6 +266,7 @@ namespace InGame
         {
             if (selectInputProvider.DifficultyDown())
             {
+                commandLogger.inputChar('B', TimeManager.instance.CurrentTime);
                 currentSongDifficulty = ReduceDifficulty(currentSongDifficulty);
                 DifficultyChange(currentSongDifficulty);
                 _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
@@ -254,9 +277,11 @@ namespace InGame
         {
             if (selectInputProvider.Right())
             {
+                commandLogger.inputChar('L', TimeManager.instance.CurrentTime);
                 try
                 {
                     currentSong = currentSong.Next;
+                    if (currentSong.Value == null) currentSong = songComponents[SongDifficultyToInt(currentSongDifficulty)].First;
                 }
                 catch
                 {
@@ -264,12 +289,14 @@ namespace InGame
                     {
                         currentSong = songComponents[SongDifficultyToInt(currentSongDifficulty)].First;
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Debug.LogError($"Error >> NextSong : {e}");
                         currentSong.Value = null;
                     }
                 }
                 _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+                _view.SongFrameManager.Right();
             }
         }
 
@@ -277,9 +304,11 @@ namespace InGame
         {
             if (selectInputProvider.Left())
             {
+                commandLogger.inputChar('R', TimeManager.instance.CurrentTime);
                 try
                 {
                     currentSong = currentSong.Previous;
+                    if (currentSong.Value == null) currentSong = songComponents[SongDifficultyToInt(currentSongDifficulty)].Last;
                 }
                 catch
                 {
@@ -287,19 +316,31 @@ namespace InGame
                     {
                         currentSong = songComponents[SongDifficultyToInt(currentSongDifficulty)].Last;
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Debug.LogError($"Error >> PrevSong : {e}");
                         currentSong.Value = null;
                     }
                 }
                 _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+                _view.SongFrameManager.Left();
             }
         }
 
         private void EnterSong()
         {
+            string _cmd = new string(commandLogger.Cmd);
             if (selectInputProvider.Enter())
             {
+                Debug.Log("@CMD:"+_cmd);
+                if (_cmd == "UUUUUURLBA")
+                {
+                    commandLogger.ResetCommand();
+                    currentSongDifficulty = SongDifficulty.Secret;
+                    DifficultyChange(currentSongDifficulty);
+                    _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+                    return;
+                }
                 if (currentSong.Value != null)
                 {
                     SoundManager.instance.PlaySE(SEFile.MoveScene);
@@ -413,6 +454,16 @@ namespace InGame
                         }
                     }
                     break;
+                case SongDifficulty.Secret:
+                    try
+                        {
+                            currentSong = songComponents[4].First;
+                        }
+                        catch
+                        {
+                            currentSong.Value = null;
+                        }
+                    break;
             }
         }
 
@@ -458,7 +509,7 @@ namespace InGame
             {
                 TimeManager.instance.SetTime((float)(AudioSettings.dspTime - startTime));
                 var time = TimeManager.instance.CurrentTime;
-                if (TimeManager.instance.CurrentTime > 0)
+                if (/*TimeManager.instance.CurrentTime > 0*/true)
                 {
                     // Debug.Log($"Time: {TimeManager.instance.CurrentTime}");
                     foreach (BaseNote note in _notes)
@@ -470,6 +521,14 @@ namespace InGame
                     foreach (Lights.Light light in _view.Lights)
                     {
                         light.ManualUpdate();
+                    }
+                    foreach (var Elight in _view.ELights)
+                    {
+                        Elight.ManualUpdate();
+                    }
+                    foreach (var HideLight in _view.HideLights)
+                    {
+                        HideLight.ManualUpdate();
                     }
                 }
             }
@@ -582,6 +641,19 @@ namespace InGame
             BindPush();
         }
 
+        void BootDLL()
+        {
+            // int check = WasapiLatency.Start();
+            // if (check != 0)
+            // {
+            //     Debug.LogError($"WASAPI latency DLLの起動に失敗しました: errorCode {check}");
+            //     return;
+            // }
+
+            // 少し待ってDLLが値を取得できるようにする
+            Invoke(nameof(MusicGameInitialize), 0.5f);
+        }
+
 
         void MusicGameInitialize()
         {
@@ -592,10 +664,6 @@ namespace InGame
             _LatencyOffset.gameObject.SetActive(false);
             _MusicLatencyOffset.gameObject.SetActive(false);
             _comboDisplayPresenter.Initialize();
-            TimeManager.instance.ResetTime();
-            startTime = AudioSettings.dspTime + 2.0f;
-            SoundManager.instance.PlayClipScheduled(currentSong.Value.audioClip, startTime - MLOffset);
-            TimeManager.instance.SetTime((float)(AudioSettings.dspTime - startTime));
             // SoundManager.instance.PlayClip(currentSong.Value.audioClip);
             // await UniTask.Delay(450, cancellationToken: ct);
             VariableInitialize();
@@ -603,7 +671,31 @@ namespace InGame
             {
                 light.Initialize();
             }
+            foreach (var Elight in _view.ELights)
+            {
+                Elight.Initialize();
+            }
+            foreach (var HideLight in _view.HideLights)
+            {
+                HideLight.Initialize();
+            }
             Load(currentSong.Value.beatMapData);
+            TimeManager.instance.ResetTime();
+            startTime = AudioSettings.dspTime + 2.0f;
+            SoundManager.instance.PlayClipScheduled(currentSong.Value.audioClip, startTime-_notesLoader.Offset);
+            // 追加コード ------------------------------
+            // float latencyMs = GetAudioStreamLatency();
+            // // 2. ミリ秒を「秒」に変換 (例: 30ms -> 0.030s)
+            // MLOffset = latencyMs / 1000.0f;
+            // Debug.Log($"レイテンシ補正値: {MLOffset} ms を適用します。");
+            // float outputLatency = (float)WasapiLatency.GetLatencySeconds();
+
+            // Debug.Log(
+            //     $"Output Latency : " +
+            //     $"{outputLatency * 1000.0:F2} ms"
+            // );
+            //-----------------------------------------
+            TimeManager.instance.SetTime((float)(AudioSettings.dspTime - startTime - MLOffset /*- outputLatency*/));
             for (int i = 0; i < _defaultNoteNum; i++)
             {
                 Generate();
@@ -640,7 +732,7 @@ namespace InGame
                 int index = i; // ローカル変数にコピー
                 inputProvider.SubscriptForKeyDownOnceAction(index, () => NoteJudge(index));
                 inputProvider.SubscriptForKeyDownAction(index, () => LongNoteJudge(index));
-                inputProvider.SubscriptForKeyDownAction(index, () => _view.Lights[index].ColorChange());
+                // inputProvider.SubscriptForKeyDownAction(index, () => _view.Lights[index].ColorChange());
             }
 
 
@@ -721,7 +813,10 @@ namespace InGame
                         Debug.Log($"Note: {i} _notesLoader.NotesDatas[i].laneNum == laneNum");
                         float time = _notesLoader.NotesDatas[i].noteAbsTime - TimeManager.instance.CurrentTime;
                         if (SearchNote(i, laneNum).IsPushed && isExcludePushedNote) continue;
-                        if (NoteJudgeProcess(i)) return;
+                        if (NoteJudgeProcess(i))
+                        {
+                            return;
+                        }
                     }
                 }
                 catch (Exception e)
@@ -731,6 +826,8 @@ namespace InGame
                 }
             }
             Debug.Log($"ThisNoteNum = {NearestTimeNoteNum}");
+            // PushEffect(laneNum);
+            _view.Lights[laneNum].ColorChange();
             return;
         }
 
@@ -778,6 +875,7 @@ namespace InGame
                     SoundManager.instance.PlaySE(SEFile.Tap);
                     note.JudgeDisplay(NotesJudgeState.Perfect);
                     note.Push();
+                    TapEffect(laneNum);
                     return true;
                 }
                 else if (NearestTime < 1f / 60f * 8.5f)
@@ -785,6 +883,7 @@ namespace InGame
                     SoundManager.instance.PlaySE(SEFile.Tap);
                     note.JudgeDisplay(NotesJudgeState.Great);
                     note.Push();
+                    TapEffect(laneNum);
                     return true;
                 }
                 else if (NearestTime < 1f / 60f * 13.5f)
@@ -792,13 +891,16 @@ namespace InGame
                     // SoundManager.instance.PlaySE(SEFile.Tap);
                     note.JudgeDisplay(NotesJudgeState.Bad);
                     note.Push();
+                    PushEffect(laneNum);
                     return true;
                 }
+                PushEffect(laneNum);
                 return false;
             }
             // ロングノーツの時
             else if (_notesLoader.NotesDatas[i].noteType == 2)
             {
+                PushEffect(laneNum);
                 longNote = SearchNote(i, laneNum)?.GetComponent<LongNote>();
                 if (longNote == null) return false;
                 if (longNote.IsPushed) return false;
@@ -831,12 +933,28 @@ namespace InGame
 
         void LongNoteJudge(int laneNum)
         {
-            if (!(_notesManager.UsingNotesObjDatas[laneNum]?.Count > 0)) return;
+            PushEffect(laneNum);
+            if (!(_notesManager.UsingNotesObjDatas[laneNum]?.Count > 0))
+            {
+                return;
+            }
             if (_notesManager.UsingNotesObjDatas[laneNum].First.Value is Notes.LongNote)
             {
                 Notes.LongNote longNote = _notesManager.UsingNotesObjDatas[laneNum].First.Value as Notes.LongNote;
                 longNote.Press();
             }
+        }
+
+        void PushEffect(int laneNum)
+        {
+            _view.Lights[laneNum].ColorChange();
+            _view.HideLights[laneNum].ColorChange();
+        }
+
+        void TapEffect(int laneNum)
+        {
+            _view.ELights[laneNum].ColorChange();
+            _view.TapEffects[laneNum].Play();
         }
         
         

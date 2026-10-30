@@ -26,4 +26,14 @@ public class SongFrameManager : MonoBehaviour
         BackGroundObj.SetActive(false);
         _noteSpeedObj.SetActive(false);
     }
+
+    public void Left()
+    {
+        songFrame.MoveHorizon(0.5f);
+    }
+
+    public void Right()
+    {
+        songFrame.MoveHorizon(-0.5f);
+    }
 }

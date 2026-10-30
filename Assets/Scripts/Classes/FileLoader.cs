@@ -5,6 +5,7 @@ using Interface.FileLoader;
 using System.IO;
 using System;
 using SongDatas;
+using System.Linq;
 
 namespace Classes.FileLoader
 {
@@ -15,7 +16,7 @@ namespace Classes.FileLoader
         public List<LinkedList<SongComponent>> GenerateSongComponents()
         {
             List<LinkedList<SongComponent>> songComponents = new List<LinkedList<SongComponent>>();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 5; i++)
             {
                 songComponents.Add(new LinkedList<SongComponent>());
             }
@@ -38,7 +39,8 @@ namespace Classes.FileLoader
                         (int?, string) normal = GetBeatMap(directory, SongDifficulty.Normal);
                         (int?, string) hard = GetBeatMap(directory, SongDifficulty.Hard);
                         (int?, string) expert = GetBeatMap(directory, SongDifficulty.Expert);
-                        LinkedListNode<SongComponent> easyNode = null, normalNode = null, hardNode = null, expertNode = null;
+                        (int?, string) secret = GetBeatMap(directory, SongDifficulty.Secret);
+                        LinkedListNode<SongComponent> easyNode = null, normalNode = null, hardNode = null, expertNode = null, secretNode = null;
                         if (easy.Item1 != null)
                         {
                             Debug.Log("easyAdd");
@@ -63,7 +65,13 @@ namespace Classes.FileLoader
                             SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Expert, difficultyNum: expert.Item1, beatMapData: expert.Item2);
                             expertNode = AddBeatMap(Component, ref songComponents);
                         }
-                        SongComponentNodeSetAll(ref easyNode, ref normalNode, ref hardNode, ref expertNode);
+                        if (secret.Item1 != null)
+                        {
+                            Debug.Log("SecretAdd");
+                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Secret, difficultyNum: secret.Item1, beatMapData: secret.Item2);
+                            secretNode = AddBeatMap(Component, ref songComponents);
+                        }
+                        SongComponentNodeSetAll(ref easyNode, ref normalNode, ref hardNode, ref expertNode, ref secretNode);
                     }
                     catch (Exception e)
                     {
@@ -77,12 +85,14 @@ namespace Classes.FileLoader
         public void SongComponentNodeSetAll(ref LinkedListNode<SongComponent> easyNode,
                                             ref LinkedListNode<SongComponent> normalNode,
                                             ref LinkedListNode<SongComponent> hardNode,
-                                            ref LinkedListNode<SongComponent> expertNode)
+                                            ref LinkedListNode<SongComponent> expertNode,
+                                            ref LinkedListNode<SongComponent> secretNode)
         {
             var _easyNode = easyNode;
             var _normalNode = normalNode;
             var _hardNode = hardNode;
             var _expertNode = expertNode;
+            var _secretNode = secretNode;
             void NodeSet(ref LinkedListNode<SongComponent> node)
             {
                 if (node != null)
@@ -91,6 +101,7 @@ namespace Classes.FileLoader
                     node.Value.SetListNode(_normalNode, SongDifficulty.Normal);
                     node.Value.SetListNode(_hardNode, SongDifficulty.Hard);
                     node.Value.SetListNode(_expertNode, SongDifficulty.Expert);
+                    node.Value.SetListNode(_secretNode, SongDifficulty.Secret);
                 }
             }
             ref LinkedListNode<SongComponent> linkedListNode = ref easyNode;
@@ -101,10 +112,13 @@ namespace Classes.FileLoader
             NodeSet(ref linkedListNode);
             linkedListNode = ref expertNode;
             NodeSet(ref linkedListNode);
+            linkedListNode = ref secretNode;
+            NodeSet(ref linkedListNode);
         }
 
         public LinkedListNode<SongComponent> AddBeatMap(SongComponent songComponent, ref List<LinkedList<SongComponent>> songComponents)
         {
+            Debug.Log($"SongComponent : \n name : {songComponent.songData.songName} \n difficulty : {songComponent.songDifficulty}, {songComponent.difficultyNum}");
             int num = -1;
             int count;
             switch (songComponent.songDifficulty)
@@ -120,6 +134,9 @@ namespace Classes.FileLoader
                     break;
                 case SongDifficulty.Expert:
                     num = 3;
+                    break;
+                case SongDifficulty.Secret:
+                    num = 4;
                     break;
             }
             if (num == -1)
@@ -162,7 +179,7 @@ namespace Classes.FileLoader
             }
             try
             {
-                while (songComponent.difficultyNum < linkedListNode.Value.difficultyNum)
+                while (songComponent.difficultyNum > linkedListNode.Value.difficultyNum)
                 {
                     try
                     {
@@ -178,7 +195,7 @@ namespace Classes.FileLoader
             }
             catch (Exception e)
             {
-                Debug.LogError($"AddBeatMapWhile: Error :{e}");
+                Debug.LogError($"AddBeatMapWhile: Error :{e} \n SongComponent : \n name : {songComponent.songData.songName} \n difficulty : {songComponent.songDifficulty}, {songComponent.difficultyNum}");
                 songComponents[num].AddFirst(songComponent);
                 return songComponents[num].First;
             }
@@ -261,6 +278,7 @@ namespace Classes.FileLoader
                 if (difficulty == SongDifficulty.Normal) difficultyStr = "normal";
                 if (difficulty == SongDifficulty.Hard) difficultyStr = "hard";
                 if (difficulty == SongDifficulty.Expert)difficultyStr = "expert";
+                if (difficulty == SongDifficulty.Secret)difficultyStr = "secret";
                 Debug.Log(difficultyStr.ToLower());
                 if (difficultyStr.ToLower() == directoryName[0])
                 {

@@ -57,6 +57,8 @@ public class NotesLoader : MonoBehaviour
     public int NoteNum => noteNum;
     public int MaxBlock => maxBlock;
     public List<NotesData> NotesDatas => notesDatas;
+    private double _offset;
+    public double Offset => _offset;
 
     public void Initialize(string jsonData)
     {
@@ -79,6 +81,7 @@ public class NotesLoader : MonoBehaviour
         Debug.Log($"総ノーツ数: {noteNum}, 曲名: {inputJson.name}, BPM: {inputJson.BPM}, オフセット: {inputJson.offset}");
         Debug.Log($"ノーツ1 LPB: {inputJson.notes[0].LPB}");
         maxBlock = inputJson.maxBlock;
+        _offset = inputJson.offset / 50000;
         CreateNotesList(inputJson, inputJson.notes, 0);
         for (int i = 0; i < notesDatas.Count; i++)
         {
@@ -97,7 +100,7 @@ public class NotesLoader : MonoBehaviour
         for (int i = 0; i < notes.Length; i++)
         {
             //時間を計算
-            float absTime = (60 / (inputJson.BPM * (float)notes[i].LPB) * (notes[i].num + addnum)) /*+ ((60f / inputJson.BPM * 4f) *(inputJson.offset / 2400))*/ + inputJson.offset/50000;
+            float absTime = (60 / (inputJson.BPM * (float)notes[i].LPB) * (notes[i].num + addnum)) /*+ ((60f / inputJson.BPM * 4f) *(inputJson.offset / 2400))*/;
             //リストに追加
             notesDatas.Add(new NotesData(notes[i].block, notes[i].type, notes[i].softLanding, notes[i].isCritical , absTime, 0));
             if (notes[i].notes != null)

@@ -119,7 +119,7 @@ namespace Classes.NotesManager
                 // y = UsingNotesObj[beforeLaneNum].Last.Value.transform.position.y;
                 // time = notesDatas[i].noteRelTime * notesDatas[i-1].noteSoftLanding / 100f;
             }
-            Vector3 vector3 = new Vector3(-2.5f + notesDatas[i].laneNum, y + NotesSpeed * time / 60f, -1);
+            Vector3 vector3 = new Vector3(-2.5f + notesDatas[i].laneNum, y + NotesSpeed * time / 60f, 5);
             return vector3;
         }
 
@@ -148,7 +148,7 @@ namespace Classes.NotesManager
                     UsingNotesObj[notesDatas[i].laneNum].AddLast(note);
                     // Vector3 endPoint = new Vector3(-2.5f + notesDatas[i + 1].laneNum, CalcRelDistance(i + 1, NotesSpeed, notesDatas), -1f);
                     // Vector3 endPoint = new Vector3(-2.5f + notesDatas[i].laneNum, NotesSpeed/60f * (notesDatas[i+1].noteAbsTime - notesDatas[i].noteAbsTime) * (notesDatas[i-1].noteSoftLanding / 100f), -1);
-                    Vector3 endPoint = new Vector3(-2.5f + notesDatas[i].laneNum, GeneratePosition(i + 1, NotesSpeed, notesDatas).y - GeneratePosition(i, NotesSpeed, notesDatas).y, -1);
+                    Vector3 endPoint = new Vector3(-2.5f + notesDatas[i].laneNum, GeneratePosition(i + 1, NotesSpeed, notesDatas).y - GeneratePosition(i, NotesSpeed, notesDatas).y, 5);
                     note.Initialize(notesDatas[i].laneNum, notesDatas[i].noteType, notesDatas[i].noteSoftLanding, notesDatas[i].noteAbsTime - _offset, vector3, notesDatas[i + 1].noteSoftLanding, notesDatas[i + 1].noteAbsTime - _offset, notesDatas[i].isCritical, endPoint);
                     note.gameObject.SetActive(true);
                 }
@@ -157,7 +157,7 @@ namespace Classes.NotesManager
 
         public BaseNote Create()
         {
-            GameObject obj = Instantiate(baseNote.gameObject, new Vector3(0, 100, 0), Quaternion.identity);
+            GameObject obj = Instantiate(baseNote.gameObject, new Vector3(0, 100, 5), Quaternion.identity);
             BaseNote objsNote = obj.GetComponent<BaseNote>();
             UnUseNotesObj.AddLast(objsNote);
             obj.SetActive(false);
@@ -166,7 +166,7 @@ namespace Classes.NotesManager
 
         public BaseNote LongNoteCreate()
         {
-            GameObject obj = Instantiate(longNote.gameObject, new Vector3(0, 100, 0), Quaternion.identity);
+            GameObject obj = Instantiate(longNote.gameObject, new Vector3(0, 100, 5), Quaternion.identity);
             LongNote objsNote = obj.GetComponent<LongNote>();
             UnUseLongNotesObj.AddLast(objsNote);
             obj.SetActive(false);
@@ -179,11 +179,12 @@ namespace Classes.NotesManager
             int noteType = target.NoteType;
             if (UsingNotesObj[laneNum].Count > 0)
             {
-                BaseNote note = UsingNotesObj[laneNum].Find(target).Value; ;
+                BaseNote note = UsingNotesObj[laneNum].Find(target).Value;
+                if (note == null) return;
                 UsingNotesObj[laneNum].Remove(target);
                 if (noteType == 1) UnUseNotesObj.AddLast(note);
                 if (noteType == 2) UnUseLongNotesObj.AddLast(note as LongNote);
-                note.gameObject.transform.position = new Vector3(0, 100, 0); // 画面外に移動
+                note.gameObject.transform.position = new Vector3(0, 100, 5); // 画面外に移動
                 note.gameObject.SetActive(false);
             }
         }
@@ -208,11 +209,11 @@ namespace Classes.NotesManager
             {
                 foreach (BaseNote Obj in UnUseNotesObj)
                 {
-                    Obj.transform.position = new Vector3(0, 100, 0);
+                    Obj.transform.position = new Vector3(0, 100, 5);
                 }
                 foreach (BaseNote Obj in UnUseLongNotesObj)
                 {
-                    Obj.transform.position = new Vector3(0, 100, 0);
+                    Obj.transform.position = new Vector3(0, 100, 5);
                 }
             }
             catch (Exception e)

@@ -5,6 +5,7 @@ using SongDatas;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using DG.Tweening;
 
 public class SongFrame : MonoBehaviour
 {
@@ -25,11 +26,16 @@ public class SongFrame : MonoBehaviour
     [SerializeField] TextMeshPro expertNum;
     [SerializeField] TextMeshPro expertText;
     [SerializeField] Image expertSurface;
+    [SerializeField] GameObject secretObj;
+    [SerializeField] TextMeshPro secretNum;
+    [SerializeField] TextMeshPro secretText;
+    [SerializeField] Image secretSurface;
     [SerializeField] GameObject backGround;
     [SerializeField] Material easyColor;
     [SerializeField] Material normalColor;
     [SerializeField] Material hardColor;
     [SerializeField] Material expertColor;
+    [SerializeField] Material secretColor;
     [SerializeField] Material NoDataColor;
 
     public void Initialize(SongComponent songComponent = null)
@@ -39,6 +45,7 @@ public class SongFrame : MonoBehaviour
         normalObj.SetActive(false);
         hardObj.SetActive(false);
         expertObj.SetActive(false);
+        secretObj.SetActive(false);
         if (songComponent == null)
         {
             songName.text = "NoData";
@@ -94,9 +101,28 @@ public class SongFrame : MonoBehaviour
                 expertNum.color = expertText.color = Color.white;
                 expertSurface.color = _color;
                 break;
+            case SongDifficulty.Secret:
+                if (songComponent.Secret != null)
+                {
+                    easyObj.SetActive(false);
+                    normalObj.SetActive(false);
+                    hardObj.SetActive(false);
+                    expertObj.SetActive(false);
+                    secretObj.SetActive(true);
+                    secretNum.text = songComponent.Secret.Value.difficultyNum.ToString();
+                    _color = secretColor.color;
+                }
+                break;
         }
         backGroundRender.material.color = _color;
         songName.color = _color;
         songName.faceColor = _color;
+    }
+
+    public void MoveHorizon(float x)
+    {
+        this.transform.DOComplete();
+        this.transform.position = new Vector3(x, this.transform.position.y, this.transform.position.z);
+        this.transform.DOMove(new Vector3(0, this.transform.position.y, this.transform.position.z), 0.2f);
     }
 }

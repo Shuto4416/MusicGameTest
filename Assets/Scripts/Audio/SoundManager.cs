@@ -95,6 +95,15 @@ namespace Audio {
             bGM_STATE = BGM_STATE.NOW_PLAY;
         }
 
+        public void RePlayClipScheduled(AudioClip audioClip, double time, double playPosition)
+        {
+            readAudioClip = audioClip;
+            _audioSourceBGM.clip = audioClip;
+            _audioSourceBGM.time = (float)playPosition;
+            _audioSourceBGM.PlayScheduled(time);
+            bGM_STATE = BGM_STATE.NOW_PLAY;
+        }
+
         public void SoundPause()
         {
             bGM_STATE = BGM_STATE.PAUSE;

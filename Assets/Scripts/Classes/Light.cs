@@ -30,13 +30,13 @@ namespace Lights
         {
             if (!(_rend.material.color.a <= 0))
             {
-                _rend.material.color = new Color(_rend.material.color.r, _rend.material.color.r, _rend.material.color.r, _alpha);
+                _rend.material.color = new Color(_rend.material.color.r, _rend.material.color.g, _rend.material.color.b, _alpha);
             }
             _alpha -= FadeSpeed * Time.deltaTime;
         }
         public void ColorChange()
         {
-            _alpha = 0.3f;
+            _alpha = 1f;
             _rend.material.color = new Color(_rend.material.color.r, _rend.material.color.g, _rend.material.color.b, _alpha);
         }
     }

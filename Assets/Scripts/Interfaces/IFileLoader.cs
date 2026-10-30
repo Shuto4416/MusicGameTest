@@ -17,7 +17,8 @@ namespace SongDatas {
         Easy,
         Normal,
         Hard,
-        Expert
+        Expert,
+        Secret
     }
 
     public class SongComponent
@@ -26,6 +27,7 @@ namespace SongDatas {
         public LinkedListNode<SongComponent> Normal;
         public LinkedListNode<SongComponent> Hard;
         public LinkedListNode<SongComponent> Expert;
+        public LinkedListNode<SongComponent> Secret;
         public SongData songData;
         public byte[] textureData;
         public AudioClip audioClip;
@@ -48,9 +50,12 @@ namespace SongDatas {
                 case SongDifficulty.Expert:
                     Expert = linkedListNode;
                     break;
+                case SongDifficulty.Secret:
+                    Secret = linkedListNode;
+                    break;
             }
         }
-        public SongComponent(SongData songData, byte[] textureData, AudioClip audioClip, SongDifficulty songDifficulty, int? difficultyNum, string beatMapData, LinkedListNode<SongComponent> Easy = null, LinkedListNode<SongComponent> Normal = null, LinkedListNode<SongComponent> Hard = null, LinkedListNode<SongComponent> Expert = null)
+        public SongComponent(SongData songData, byte[] textureData, AudioClip audioClip, SongDifficulty songDifficulty, int? difficultyNum, string beatMapData, LinkedListNode<SongComponent> Easy = null, LinkedListNode<SongComponent> Normal = null, LinkedListNode<SongComponent> Hard = null, LinkedListNode<SongComponent> Expert = null, LinkedListNode<SongComponent> Secret = null)
         {
             this.songData = songData;
             this.textureData = textureData;
@@ -62,6 +67,7 @@ namespace SongDatas {
             this.Normal = Normal;
             this.Hard = Hard;
             this.Expert = Expert;
+            this.Secret = Secret;
         }
     }
 }
