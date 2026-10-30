@@ -20,7 +20,7 @@ namespace ZenjectSample
                 .AsCached();
             Container
                 .Bind<ISelectInputProvider>()
-                .To<AC_SelectInputProvider>()
+                .To<DebugSelectInputProvider>()
                 .AsCached();
             Container
                 .Bind<ILatencyAdjustInputProvider>()

@@ -23,6 +23,7 @@ namespace Classes.FileLoader
             string path = Application.dataPath + "/" + _defaultPath;
             byte[] texture = null;
             AudioClip audioClip = null;
+            AudioClip preview = null;
             SongData songData = null;
             Debug.Log(path);
             DirectoryInfo directoryInfo = new DirectoryInfo(@path);
@@ -34,6 +35,7 @@ namespace Classes.FileLoader
                     {
                         texture = GetFileImage(directory);
                         audioClip = GetFileAudio(directory);
+                        preview = GetPreviewAudio(directory);
                         songData = JsonUtility.FromJson<SongData>(GetFileJson(directory));
                         (int?, string) easy = GetBeatMap(directory, SongDifficulty.Easy);
                         (int?, string) normal = GetBeatMap(directory, SongDifficulty.Normal);
@@ -44,31 +46,31 @@ namespace Classes.FileLoader
                         if (easy.Item1 != null)
                         {
                             Debug.Log("easyAdd");
-                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Easy, difficultyNum: easy.Item1, beatMapData: easy.Item2);
+                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, preView: preview, songDifficulty: SongDifficulty.Easy, difficultyNum: easy.Item1, beatMapData: easy.Item2);
                             easyNode = AddBeatMap(Component, ref songComponents);
                         }
                         if (normal.Item1 != null)
                         {
                             Debug.Log("normalAdd");
-                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Normal, difficultyNum: normal.Item1, beatMapData: normal.Item2);
+                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, preView: preview, songDifficulty: SongDifficulty.Normal, difficultyNum: normal.Item1, beatMapData: normal.Item2);
                             normalNode = AddBeatMap(Component, ref songComponents);
                         }
                         if (hard.Item1 != null)
                         {
                             Debug.Log("hardAdd");
-                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Hard, difficultyNum: hard.Item1, beatMapData: hard.Item2);
+                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, preView: preview, songDifficulty: SongDifficulty.Hard, difficultyNum: hard.Item1, beatMapData: hard.Item2);
                             hardNode = AddBeatMap(Component, ref songComponents);
                         }
                         if (expert.Item1 != null)
                         {
                             Debug.Log("ExpertAdd");
-                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Expert, difficultyNum: expert.Item1, beatMapData: expert.Item2);
+                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, preView: preview, songDifficulty: SongDifficulty.Expert, difficultyNum: expert.Item1, beatMapData: expert.Item2);
                             expertNode = AddBeatMap(Component, ref songComponents);
                         }
                         if (secret.Item1 != null)
                         {
                             Debug.Log("SecretAdd");
-                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, songDifficulty: SongDifficulty.Secret, difficultyNum: secret.Item1, beatMapData: secret.Item2);
+                            SongComponent Component = new SongComponent(songData: songData, textureData: texture, audioClip: audioClip, preView: preview, songDifficulty: SongDifficulty.Secret, difficultyNum: secret.Item1, beatMapData: secret.Item2);
                             secretNode = AddBeatMap(Component, ref songComponents);
                         }
                         SongComponentNodeSetAll(ref easyNode, ref normalNode, ref hardNode, ref expertNode, ref secretNode);
@@ -248,6 +250,19 @@ namespace Classes.FileLoader
             return audioClip;
         }
 
+        private AudioClip GetPreviewAudio(DirectoryInfo directoryInfo)
+        {
+            foreach (var directory in directoryInfo.GetDirectories())
+            {
+                var directoryName = directory.Name.ToLower();
+                if ("preview" == directoryName)
+                {
+                    return GetFileAudio(directory);
+                }
+            }
+            return null;
+        }
+
         private string GetFileJson(DirectoryInfo directoryInfo)
         {
             string path = null;
@@ -256,7 +271,7 @@ namespace Classes.FileLoader
             {
                 path = file.FullName;
             }
-            if(path == null) throw new Exception($"Error!フォルダ内に.jsonファイルが含まれていません:{directoryInfo.FullName}");
+            if (path == null) throw new Exception($"Error!フォルダ内に.jsonファイルが含まれていません:{directoryInfo.FullName}");
             using (var sr = new StreamReader(@path, System.Text.Encoding.UTF8))
             {
                 string filedata = sr.ReadToEnd();

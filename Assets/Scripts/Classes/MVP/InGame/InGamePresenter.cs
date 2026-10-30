@@ -124,7 +124,7 @@ namespace InGame
             _MusicLatencyOffset.gameObject.SetActive(true);
             _MusicLatencyOffset.text = "0";
             _view.SongFrameManager.Show();
-            _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+            ChangeSong(true, currentSong);
             gameState = GameState.SelectSong;
         }
 
@@ -258,7 +258,7 @@ namespace InGame
                 commandLogger.inputChar('A', TimeManager.instance.CurrentTime);
                 currentSongDifficulty = AddDifficulty(currentSongDifficulty);
                 DifficultyChange(currentSongDifficulty);
-                _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+                ChangeSong(true, currentSong);
             }
         }
 
@@ -269,7 +269,7 @@ namespace InGame
                 commandLogger.inputChar('B', TimeManager.instance.CurrentTime);
                 currentSongDifficulty = ReduceDifficulty(currentSongDifficulty);
                 DifficultyChange(currentSongDifficulty);
-                _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+                ChangeSong(true, currentSong);
             }
         }
 
@@ -277,7 +277,7 @@ namespace InGame
         {
             if (selectInputProvider.Right())
             {
-                commandLogger.inputChar('L', TimeManager.instance.CurrentTime);
+                commandLogger.inputChar('R', TimeManager.instance.CurrentTime);
                 try
                 {
                     currentSong = currentSong.Next;
@@ -295,16 +295,38 @@ namespace InGame
                         currentSong.Value = null;
                     }
                 }
-                _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+                ChangeSong(true, currentSong);
+                SoundManager.instance.PlayOneShotClip(currentSong.Value.preView);
                 _view.SongFrameManager.Right();
             }
+        }
+        private LinkedListNode<SongComponent> getNextSong(LinkedListNode<SongComponent> linkedListNode)
+        {
+            try
+            {
+                linkedListNode = linkedListNode.Next;
+                if (linkedListNode.Value == null) linkedListNode = songComponents[SongDifficultyToInt(currentSongDifficulty)].First;
+            }
+            catch
+            {
+                try
+                {
+                    linkedListNode = songComponents[SongDifficultyToInt(currentSongDifficulty)].First;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error >> NextSong : {e}");
+                    linkedListNode.Value = null;
+                }
+            }
+            return linkedListNode;
         }
 
         private void PrevSong()
         {
             if (selectInputProvider.Left())
             {
-                commandLogger.inputChar('R', TimeManager.instance.CurrentTime);
+                commandLogger.inputChar('L', TimeManager.instance.CurrentTime);
                 try
                 {
                     currentSong = currentSong.Previous;
@@ -322,9 +344,38 @@ namespace InGame
                         currentSong.Value = null;
                     }
                 }
-                _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+                ChangeSong(true, currentSong);
+                SoundManager.instance.PlayOneShotClip(currentSong.Value.preView);
                 _view.SongFrameManager.Left();
             }
+        }
+        private LinkedListNode<SongComponent> getPrevSong(LinkedListNode<SongComponent> linkedListNode)
+        {
+            try
+            {
+                linkedListNode = linkedListNode.Previous;
+                if (linkedListNode.Value == null) linkedListNode = songComponents[SongDifficultyToInt(currentSongDifficulty)].Last;
+            }
+            catch
+            {
+                try
+                {
+                    linkedListNode = songComponents[SongDifficultyToInt(currentSongDifficulty)].Last;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error >> PrevSong : {e}");
+                    linkedListNode.Value = null;
+                }
+            }
+            return linkedListNode;
+        }
+
+        private void ChangeSong(bool condition, LinkedListNode<SongComponent> linkedListNode)
+        {
+            _view.SongFrameManager.ChangePrevSong(condition, isCurrentSongNull(getPrevSong(linkedListNode)));
+            _view.SongFrameManager.ChangeSong(condition, isCurrentSongNull(linkedListNode));
+            _view.SongFrameManager.ChangeNextSong(condition, isCurrentSongNull(getNextSong(linkedListNode)));
         }
 
         private void EnterSong()
@@ -332,13 +383,14 @@ namespace InGame
             string _cmd = new string(commandLogger.Cmd);
             if (selectInputProvider.Enter())
             {
-                Debug.Log("@CMD:"+_cmd);
+                Debug.Log("@CMD:" + _cmd);
                 if (_cmd == "UUUUUURLBA")
                 {
                     commandLogger.ResetCommand();
                     currentSongDifficulty = SongDifficulty.Secret;
                     DifficultyChange(currentSongDifficulty);
-                    _view.SongFrameManager.ChangeSong(true, isCurrentSongNull(currentSong));
+                    ChangeSong(true, currentSong);
+                    SoundManager.instance.PlayOneShotClip(currentSong.Value.preView);
                     return;
                 }
                 if (currentSong.Value != null)
@@ -657,6 +709,7 @@ namespace InGame
 
         void MusicGameInitialize()
         {
+            SoundManager.instance.StopOneShot();
             _SUM_NearestTime = 0f;
             _LatencyAdjustment.Hide();
             _notesManager.SetOffset(int.Parse(_LatencyOffset.text));

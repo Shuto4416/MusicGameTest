@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TheSingleton;
+using DG.Tweening;
 
 namespace Audio {
     
@@ -31,6 +32,7 @@ namespace Audio {
         private BGM_STATE bGM_STATE;
         public BGM_STATE BGM_STATE => bGM_STATE;
         private AudioClip readAudioClip;
+        private Sequence sequence;
 
         public void PlayBGM(BGMFile fileName)
         {
@@ -74,6 +76,8 @@ namespace Audio {
 
         public void Initialize()
         {
+            sequence.Complete();
+            _audioSourceBGM.volume = 1f;
             bGM_STATE = BGM_STATE.WAIT;
         }
 
@@ -86,8 +90,32 @@ namespace Audio {
             bGM_STATE = BGM_STATE.NOW_PLAY;
         }
 
+        public void PlayOneShotClip(AudioClip audioClip)
+        {
+            sequence.Complete();
+            _audioSourceBGM.volume = 1f;
+            _audioSourceBGM.Stop();
+            if (audioClip == null) return;
+            sequence = DOTween.Sequence();
+            if (audioClip.length > 1f) sequence.AppendInterval(audioClip.length - 1f);
+            sequence.Append(_audioSourceBGM.DOFade(0f, 1f).SetEase(Ease.Linear));
+            readAudioClip = audioClip;
+            _audioSourceBGM.clip = audioClip;
+            _audioSourceBGM.Play();
+            sequence.Play();
+        }
+
+        public void StopOneShot()
+        {
+            sequence.Complete();
+            _audioSourceBGM.volume = 1f;
+            _audioSourceBGM.Stop();
+        }
+
         public void PlayClipScheduled(AudioClip audioClip, double time)
         {
+            sequence.Complete();
+            _audioSourceBGM.volume = 1f;
             _audioSourceBGM.Stop();
             readAudioClip = audioClip;
             _audioSourceBGM.clip = audioClip;

@@ -29,6 +29,7 @@ namespace InGame{
         [SerializeField]
         private SongFrameManager songFrameManager;
         public SongFrameManager SongFrameManager => songFrameManager;
+
         [SerializeField]
         private Result _result;
         public Result result => _result;

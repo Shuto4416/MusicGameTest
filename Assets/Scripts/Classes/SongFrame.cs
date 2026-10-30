@@ -37,9 +37,11 @@ public class SongFrame : MonoBehaviour
     [SerializeField] Material expertColor;
     [SerializeField] Material secretColor;
     [SerializeField] Material NoDataColor;
+    private Vector3 initPosition;
 
     public void Initialize(SongComponent songComponent = null)
     {
+        initPosition = transform.position;
         var backGroundRender = backGround.GetComponent<Renderer>();
         easyObj.SetActive(false);
         normalObj.SetActive(false);
@@ -122,7 +124,7 @@ public class SongFrame : MonoBehaviour
     public void MoveHorizon(float x)
     {
         this.transform.DOComplete();
-        this.transform.position = new Vector3(x, this.transform.position.y, this.transform.position.z);
-        this.transform.DOMove(new Vector3(0, this.transform.position.y, this.transform.position.z), 0.2f);
+        this.transform.position = new Vector3(initPosition.x + x, initPosition.y, initPosition.z);
+        this.transform.DOMove(initPosition, 0.2f);
     }
 }

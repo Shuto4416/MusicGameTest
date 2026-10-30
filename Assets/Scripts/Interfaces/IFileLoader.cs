@@ -31,6 +31,7 @@ namespace SongDatas {
         public SongData songData;
         public byte[] textureData;
         public AudioClip audioClip;
+        public AudioClip preView;
         public int? difficultyNum;
         public SongDifficulty songDifficulty;
         public string beatMapData;
@@ -55,11 +56,12 @@ namespace SongDatas {
                     break;
             }
         }
-        public SongComponent(SongData songData, byte[] textureData, AudioClip audioClip, SongDifficulty songDifficulty, int? difficultyNum, string beatMapData, LinkedListNode<SongComponent> Easy = null, LinkedListNode<SongComponent> Normal = null, LinkedListNode<SongComponent> Hard = null, LinkedListNode<SongComponent> Expert = null, LinkedListNode<SongComponent> Secret = null)
+        public SongComponent(SongData songData, byte[] textureData, AudioClip audioClip, SongDifficulty songDifficulty, int? difficultyNum, string beatMapData, AudioClip preView = null,LinkedListNode<SongComponent> Easy = null, LinkedListNode<SongComponent> Normal = null, LinkedListNode<SongComponent> Hard = null, LinkedListNode<SongComponent> Expert = null, LinkedListNode<SongComponent> Secret = null)
         {
             this.songData = songData;
             this.textureData = textureData;
             this.audioClip = audioClip;
+            this.preView = preView;
             this.songDifficulty = songDifficulty;
             this.difficultyNum = difficultyNum;
             this.beatMapData = beatMapData;
